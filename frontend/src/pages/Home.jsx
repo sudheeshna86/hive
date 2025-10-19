@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Heart } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { LoginForm } from "../components/auth/LoginForm";
 
 export default function Home() {
   const [slideIndex, setSlideIndex] = useState(0);
+
   const green = "#257a47";
   const lightBg = "linear-gradient(135deg,#fcfcfb 0%,#f6f8f7 100%)";
   const borderColor = "#dbe6e0";
@@ -52,9 +53,9 @@ export default function Home() {
           </AnimatePresence>
         </motion.div>
 
-        {/* Login Form */}
         <div className="mx-auto" style={{ width: BUTTON_BAR_WIDTH + "px" }}>
-          <LoginForm></LoginForm>
+          {/* Optional: You can include login form on home if needed */}
+          {/* <LoginForm /> */}
         </div>
       </div>
     </div>
