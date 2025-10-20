@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { CheckCircle, XCircle, Eye, AlertTriangle, MapPin, Clock, User } from "lucide-react";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 export function PendingVerificationList() {
   const [pendingCases, setPendingCases] = useState([]);
@@ -8,17 +9,73 @@ export function PendingVerificationList() {
   const [duplicateAlerts, setDuplicateAlerts] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
 
+  // Dummy data
+  const dummyCases = [
+    {
+      id: "CASE-001",
+      beneficiaryName: "John Doe",
+      age: "45",
+      gender: "male",
+      contactNumber: "1234567890",
+      address: "123 Main Street, Cityville",
+      urgencyLevel: "critical",
+      assistanceType: ["Medical", "Food"],
+      description: "Severe health condition, requires immediate assistance.",
+      medicalCondition: "Diabetes",
+      estimatedCost: "500",
+      status: "pending",
+      createdAt: new Date().toISOString(),
+      volunteerId: "VOL-001",
+      location: { lat: 12.9716, lng: 77.5946 },
+    },
+    {
+      id: "CASE-002",
+      beneficiaryName: "Jane Smith",
+      age: "30",
+      gender: "female",
+      contactNumber: "9876543210",
+      address: "456 Elm Street, Townsville",
+      urgencyLevel: "high",
+      assistanceType: ["Shelter"],
+      description: "Family lost their home in recent flood.",
+      medicalCondition: "",
+      estimatedCost: "1200",
+      status: "pending",
+      createdAt: new Date().toISOString(),
+      volunteerId: "VOL-002",
+    },
+    {
+      id: "CASE-003",
+      beneficiaryName: "Ali Khan",
+      age: "60",
+      gender: "male",
+      contactNumber: "1122334455",
+      address: "789 Oak Avenue, Villageville",
+      urgencyLevel: "medium",
+      assistanceType: ["Food"],
+      description: "Needs regular food assistance.",
+      medicalCondition: "Hypertension",
+      estimatedCost: "200",
+      status: "pending",
+      createdAt: new Date().toISOString(),
+      volunteerId: "VOL-003",
+    },
+  ];
+
   useEffect(() => {
     loadPendingCases();
   }, []);
 
   const loadPendingCases = () => {
-    const allCases = JSON.parse(localStorage.getItem("volunteerCases") || "[]");
-    const pending = allCases.filter((c) => c.status === "pending");
-    setPendingCases(pending);
+    const storedCases = JSON.parse(localStorage.getItem("volunteerCases") || "[]");
+    if (storedCases.length === 0) {
+      setPendingCases(dummyCases);
+    } else {
+      const pending = storedCases.filter((c) => c.status === "pending");
+      setPendingCases(pending);
+    }
 
-    // Detect duplicates
-    const duplicates = detectDuplicates(pending);
+    const duplicates = detectDuplicates(dummyCases);
     setDuplicateAlerts(duplicates);
   };
 
@@ -30,9 +87,7 @@ export function PendingVerificationList() {
         const case2 = cases[j];
         if (
           case1.beneficiaryName.toLowerCase().includes(case2.beneficiaryName.toLowerCase()) ||
-          case2.beneficiaryName.toLowerCase().includes(case1.beneficiaryName.toLowerCase()) ||
-          case1.address.toLowerCase().includes(case2.address.toLowerCase()) ||
-          case2.address.toLowerCase().includes(case1.address.toLowerCase())
+          case1.address.toLowerCase().includes(case2.address.toLowerCase())
         ) {
           if (!duplicates.includes(case1.id)) duplicates.push(case1.id);
           if (!duplicates.includes(case2.id)) duplicates.push(case2.id);
@@ -44,36 +99,29 @@ export function PendingVerificationList() {
 
   const handleVerification = async (caseId, action) => {
     setIsProcessing(true);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    const allCases = JSON.parse(localStorage.getItem("volunteerCases") || "[]");
-    const updatedCases = allCases.map((c) => {
-      if (c.id === caseId) {
-        return {
-          ...c,
-          status: action === "verify" ? "verified" : "rejected",
-          verificationNotes,
-          verifiedAt: new Date().toISOString(),
-          verifiedBy: JSON.parse(localStorage.getItem("user") || "{}").id,
-        };
-      }
+    await new Promise((resolve) => setTimeout(resolve, 800));
+
+    const updatedCases = pendingCases.map((c) => {
+      if (c.id === caseId)
+        return { ...c, status: action === "verify" ? "verified" : "rejected", verificationNotes };
       return c;
     });
-    localStorage.setItem("volunteerCases", JSON.stringify(updatedCases));
-    alert(`Case ${caseId} has been ${action === "verify" ? "verified" : "rejected"} successfully.`);
+
+    setPendingCases(updatedCases.filter((c) => c.status === "pending"));
+    alert(`Case ${caseId} has been ${action === "verify" ? "verified" : "rejected"}.`);
     setSelectedCase(null);
     setVerificationNotes("");
-    loadPendingCases();
     setIsProcessing(false);
   };
 
-  const getUrgencyClass = (urgency) => {
-    switch (urgency) {
+  const getUrgencyClass = (level) => {
+    switch (level) {
       case "critical":
         return "bg-danger text-white";
       case "high":
         return "bg-warning text-dark";
       case "medium":
-        return "bg-warning-subtle text-dark";
+        return "bg-info text-dark";
       case "low":
         return "bg-success text-white";
       default:
@@ -84,149 +132,151 @@ export function PendingVerificationList() {
   if (pendingCases.length === 0) {
     return (
       <div className="text-center py-5">
-        <div className="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style={{ width: 64, height: 64 }}>
-          <CheckCircle size={32} className="text-muted" />
-        </div>
-        <h5 className="mb-2">No pending cases</h5>
+        <CheckCircle size={48} className="text-muted mb-2" />
+        <h5>No Pending Cases</h5>
         <p className="text-muted">All cases have been reviewed and processed.</p>
       </div>
     );
   }
 
   return (
-    <div className="mb-4">
+    <div className="container py-3">
       {duplicateAlerts.length > 0 && (
-        <div className="alert alert-warning d-flex align-items-center">
-          <AlertTriangle size={16} className="me-2" />
-          <div>
-            <strong>Duplicate Detection Alert:</strong> {duplicateAlerts.length} cases may be duplicates. Please review carefully.
-          </div>
+        <div className="alert alert-warning d-flex align-items-center" role="alert">
+          <AlertTriangle className="me-2" /> {duplicateAlerts.length} potential duplicate cases found.
         </div>
       )}
 
-      {pendingCases.map((caseItem) => (
-        <div
-          key={caseItem.id}
-          className={`card mb-3 ${duplicateAlerts.includes(caseItem.id) ? "border-warning bg-warning-subtle" : ""}`}
-        >
-          <div className="card-header d-flex justify-content-between align-items-center">
-            <div className="d-flex align-items-center gap-2">
-              <strong>{caseItem.id}</strong>
-              <span className={`badge ${getUrgencyClass(caseItem.urgencyLevel)}`}>{caseItem.urgencyLevel}</span>
-              {duplicateAlerts.includes(caseItem.id) && (
-                <span className="badge bg-warning text-dark">
-                  <AlertTriangle size={12} className="me-1" />
-                  Potential Duplicate
-                </span>
-              )}
-            </div>
-            <button className="btn btn-outline-secondary btn-sm" onClick={() => setSelectedCase(caseItem)}>
-              <Eye size={16} className="me-1" />
-              Review
-            </button>
-          </div>
-          <div className="card-body">
-            <div className="d-flex flex-wrap gap-2 mb-2">
-              {caseItem.assistanceType.map((type) => (
-                <span key={type} className="badge bg-secondary">
-                  {type}
-                </span>
-              ))}
-            </div>
-            <p className="text-truncate">{caseItem.description}</p>
-            <div className="d-flex justify-content-between small text-muted mt-2">
-              <span>
-                <MapPin size={14} className="me-1" />
-                {caseItem.address.substring(0, 50)}...
-              </span>
-              {caseItem.estimatedCost && <span>Est. Cost: ${caseItem.estimatedCost}</span>}
-            </div>
-          </div>
-        </div>
-      ))}
-
-      {/* Case Review Modal */}
-      {selectedCase && (
-        <div className="modal show d-block" tabIndex="-1" role="dialog">
-          <div className="modal-dialog modal-xl modal-dialog-scrollable" role="document">
-            <div className="modal-content">
-              <div className="modal-header d-flex justify-content-between align-items-center">
-                <div className="d-flex align-items-center gap-2">
-                  <h5 className="modal-title">{selectedCase.id}</h5>
-                  <span className={`badge ${getUrgencyClass(selectedCase.urgencyLevel)}`}>{selectedCase.urgencyLevel}</span>
-                  {duplicateAlerts.includes(selectedCase.id) && (
-                    <span className="badge bg-warning text-dark">
-                      <AlertTriangle size={12} className="me-1" />
-                      Potential Duplicate
+      <div className="row g-3">
+        {pendingCases.map((c) => (
+          <div className="col-12" key={c.id}>
+            <div
+              className={`card shadow-sm border-0 ${
+                duplicateAlerts.includes(c.id) ? "border-warning border-2" : ""
+              }`}
+            >
+              <div className="card-body">
+                <div className="d-flex justify-content-between align-items-start">
+                  <div>
+                    <h6 className="fw-bold mb-1">{c.id}</h6>
+                    <span className={`badge ${getUrgencyClass(c.urgencyLevel)} me-2`}>
+                      {c.urgencyLevel}
                     </span>
-                  )}
-                </div>
-                <button type="button" className="btn-close" onClick={() => setSelectedCase(null)}></button>
-              </div>
-              <div className="modal-body">
-                <div className="row mb-3">
-                  {/* Beneficiary Details */}
-                  <div className="col-md-6">
-                    <h6>Beneficiary Details</h6>
-                    <p><strong>Name:</strong> {selectedCase.beneficiaryName}</p>
-                    <p><strong>Age:</strong> {selectedCase.age}</p>
-                    <p><strong>Gender:</strong> {selectedCase.gender}</p>
-                    <p><strong>Contact:</strong> {selectedCase.contactNumber || "Not provided"}</p>
-                    <p><strong>Address:</strong> {selectedCase.address}</p>
-                  </div>
-                  {/* Case Info */}
-                  <div className="col-md-6">
-                    <h6>Case Information</h6>
-                    <p><strong>Assistance Type:</strong> {selectedCase.assistanceType.join(", ")}</p>
-                    <p><strong>Estimated Cost:</strong> ${selectedCase.estimatedCost || "Not specified"}</p>
-                    <p><strong>Submitted:</strong> {new Date(selectedCase.createdAt).toLocaleString()}</p>
-                    {selectedCase.location && (
-                      <p>
-                        <strong>GPS:</strong> Lat {selectedCase.location.lat.toFixed(6)}, Lng {selectedCase.location.lng.toFixed(6)}
-                      </p>
+                    {duplicateAlerts.includes(c.id) && (
+                      <span className="badge bg-warning text-dark">
+                        <AlertTriangle size={12} className="me-1" /> Duplicate
+                      </span>
                     )}
                   </div>
+                  <button className="btn btn-outline-primary btn-sm" onClick={() => setSelectedCase(c)}>
+                    <Eye size={14} className="me-1" /> Review
+                  </button>
                 </div>
 
-                <div className="mb-3">
-                  <h6>Description</h6>
-                  <p className="p-2 bg-light rounded">{selectedCase.description}</p>
-                  {selectedCase.medicalCondition && (
-                    <>
-                      <h6>Medical Condition</h6>
-                      <p className="p-2 bg-light rounded">{selectedCase.medicalCondition}</p>
-                    </>
-                  )}
+                <div className="mt-2 text-muted small">
+                  <User size={14} className="me-1" /> {c.beneficiaryName} ({c.age}y, {c.gender}) |{" "}
+                  <Clock size={14} className="me-1 ms-2" />{" "}
+                  {new Date(c.createdAt).toLocaleDateString()}
                 </div>
 
+                <div className="mt-2">
+                  {c.assistanceType.map((type) => (
+                    <span key={type} className="badge bg-secondary me-1">
+                      {type}
+                    </span>
+                  ))}
+                </div>
+
+                <p className="mt-2 small text-muted">{c.description}</p>
+
+                <div className="d-flex justify-content-between align-items-center small text-muted">
+                  <span>
+                    <MapPin size={14} className="me-1" />
+                    {c.address.substring(0, 50)}...
+                  </span>
+                  <span className="fw-semibold text-dark">Est. Cost: ${c.estimatedCost}</span>
+                </div>
+
+                <div className="mt-3 d-flex gap-2">
+                  <button
+                    className="btn btn-success w-50"
+                    disabled={isProcessing}
+                    onClick={() => handleVerification(c.id, "verify")}
+                  >
+                    <CheckCircle size={16} className="me-1" />
+                    {isProcessing ? "Processing..." : "Accept"}
+                  </button>
+                  <button
+                    className="btn btn-danger w-50"
+                    disabled={isProcessing}
+                    onClick={() => handleVerification(c.id, "reject")}
+                  >
+                    <XCircle size={16} className="me-1" />
+                    {isProcessing ? "Processing..." : "Reject"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Modal for Review */}
+      {selectedCase && (
+        <div className="modal show d-block" tabIndex="-1" role="dialog" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
+          <div className="modal-dialog modal-lg modal-dialog-centered">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">{selectedCase.id} — Case Review</h5>
+                <button className="btn-close" onClick={() => setSelectedCase(null)}></button>
+              </div>
+              <div className="modal-body">
+                <h6>Beneficiary Details</h6>
+                <p>
+                  <strong>Name:</strong> {selectedCase.beneficiaryName} <br />
+                  <strong>Age:</strong> {selectedCase.age} | <strong>Gender:</strong>{" "}
+                  {selectedCase.gender} <br />
+                  <strong>Contact:</strong> {selectedCase.contactNumber}
+                </p>
+                <h6>Case Information</h6>
+                <p>
+                  <strong>Address:</strong> {selectedCase.address} <br />
+                  <strong>Assistance:</strong> {selectedCase.assistanceType.join(", ")} <br />
+                  <strong>Estimated Cost:</strong> ${selectedCase.estimatedCost}
+                </p>
+                <p>
+                  <strong>Description:</strong> {selectedCase.description}
+                </p>
+                {selectedCase.medicalCondition && (
+                  <p>
+                    <strong>Medical Condition:</strong> {selectedCase.medicalCondition}
+                  </p>
+                )}
                 <div className="mb-3">
-                  <label htmlFor="verificationNotes" className="form-label">Verification Notes</label>
+                  <label className="form-label">Verification Notes</label>
                   <textarea
-                    id="verificationNotes"
                     className="form-control"
-                    rows={3}
+                    rows="3"
                     value={verificationNotes}
                     onChange={(e) => setVerificationNotes(e.target.value)}
-                    placeholder="Add your verification notes..."
+                    placeholder="Add your verification notes here..."
                   ></textarea>
                 </div>
               </div>
               <div className="modal-footer">
                 <button
-                  className="btn btn-success flex-grow-1"
+                  className="btn btn-success"
                   onClick={() => handleVerification(selectedCase.id, "verify")}
                   disabled={isProcessing}
                 >
-                  <CheckCircle size={16} className="me-1" />
-                  {isProcessing ? "Processing..." : "Verify Case"}
+                  <CheckCircle size={16} className="me-1" /> Verify
                 </button>
                 <button
-                  className="btn btn-danger flex-grow-1"
+                  className="btn btn-danger"
                   onClick={() => handleVerification(selectedCase.id, "reject")}
                   disabled={isProcessing}
                 >
-                  <XCircle size={16} className="me-1" />
-                  {isProcessing ? "Processing..." : "Reject Case"}
+                  <XCircle size={16} className="me-1" /> Reject
                 </button>
               </div>
             </div>

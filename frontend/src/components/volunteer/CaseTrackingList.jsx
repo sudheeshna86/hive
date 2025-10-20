@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { Table, Badge, Button, Card } from "react-bootstrap";
 import { FiEye, FiEdit, FiCheckCircle } from "react-icons/fi";
 import { useToast } from "../../hooks/useToast";
+import { motion, AnimatePresence } from "framer-motion";
 
 export function CaseTrackingList() {
   const [cases, setCases] = useState([]);
@@ -44,6 +45,13 @@ export function CaseTrackingList() {
     }
   };
 
+  // Row animation variants
+  const rowVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: -30 },
+  };
+
   return (
     <Card className="mb-4">
       <Card.Body>
@@ -63,43 +71,63 @@ export function CaseTrackingList() {
                 <th>Actions</th>
               </tr>
             </thead>
-            <tbody>
-              {cases.map((c) => (
-                <tr key={c.id}>
-                  <td>{c.id}</td>
-                  <td>{c.beneficiaryName}</td>
-                  <td>{c.assistanceType.join(", ")}</td>
-                  <td>{c.urgencyLevel}</td>
-                  <td>{getStatusBadge(c.status)}</td>
-                  <td>{formatDate(c.createdAt)}</td>
-                  <td className="d-flex gap-2">
-                    <Button
-                      variant="outline-primary"
-                      size="sm"
-                      onClick={() => toast({ title: "Case Details", description: JSON.stringify(c, null, 2) })}
-                    >
-                      <FiEye />
-                    </Button>
-                    {c.status !== "completed" && (
+            <AnimatePresence>
+              <tbody>
+                {cases.map((c, idx) => (
+                  <motion.tr
+                    key={c.id}
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
+                    variants={rowVariants}
+                    transition={{ duration: 0.4, delay: idx * 0.1 }}
+                    whileHover={{ scale: 1.02, boxShadow: "0px 5px 15px rgba(0,0,0,0.1)" }}
+                  >
+                    <td>{c.id}</td>
+                    <td>{c.beneficiaryName}</td>
+                    <td>{c.assistanceType.join(", ")}</td>
+                    <td>{c.urgencyLevel}</td>
+                    <td>{getStatusBadge(c.status)}</td>
+                    <td>{formatDate(c.createdAt)}</td>
+                    <td className="d-flex gap-2">
                       <Button
-                        variant="outline-success"
+                        variant="outline-primary"
                         size="sm"
-                        onClick={() => updateStatus(c.id, "completed")}
+                        onClick={() =>
+                          toast({
+                            title: "Case Details",
+                            description: JSON.stringify(c, null, 2),
+                          })
+                        }
                       >
-                        <FiCheckCircle />
+                        <FiEye />
                       </Button>
-                    )}
-                    <Button
-                      variant="outline-secondary"
-                      size="sm"
-                      onClick={() => toast({ title: "Edit Action", description: "Editing functionality can be added here." })}
-                    >
-                      <FiEdit />
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
+                      {c.status !== "completed" && (
+                        <Button
+                          variant="outline-success"
+                          size="sm"
+                          onClick={() => updateStatus(c.id, "completed")}
+                        >
+                          <FiCheckCircle />
+                        </Button>
+                      )}
+                      <Button
+                        variant="outline-secondary"
+                        size="sm"
+                        onClick={() =>
+                          toast({
+                            title: "Edit Action",
+                            description: "Editing functionality can be added here.",
+                          })
+                        }
+                      >
+                        <FiEdit />
+                      </Button>
+                    </td>
+                  </motion.tr>
+                ))}
+              </tbody>
+            </AnimatePresence>
           </Table>
         )}
       </Card.Body>

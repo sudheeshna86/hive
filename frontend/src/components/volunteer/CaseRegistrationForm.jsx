@@ -1,372 +1,510 @@
-// components/volunteer/CaseRegistrationForm.jsx
-import React, { useState, useRef } from "react";
-import { Button, Form, Badge, Card } from "react-bootstrap";
-import { FiCamera, FiMic, FiMapPin, FiX, FiSquare } from "react-icons/fi";
-import { useToast } from "../../hooks/useToast"; // keep your custom toast hook
+import { useState } from "react";
+import { Check, Upload, Camera, Mic, MapPin } from "lucide-react";
 
-const assistanceTypes = ["Food", "Medical", "Shelter", "Education", "Transportation", "Clothing", "Emergency"];
+const steps = ["Basic Info", "Media", "Tags & Urgency", "Review"];
+const tags = [
+  "medical",
+  "bed_ridden",
+  "child",
+  "senior",
+  "pregnant",
+  "mental_health",
+];
 
-export function CaseRegistrationForm() {
+export default function CaseRegistrationForm() {
+  const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState({
-    beneficiaryName: "",
+    fullName: "",
     age: "",
     gender: "",
-    contactNumber: "",
-    address: "",
-    urgencyLevel: "",
-    assistanceType: [],
-    description: "",
-    medicalCondition: "",
-    estimatedCost: "",
+    primaryNeed: "",
+    notes: "",
     photo: null,
-    voiceRecording: null,
-    location: null,
+    photoPreview: "",
+    audio: null,
+    location: { lat: 0, lng: 0, address: "" },
+    selectedTags: [],
+    urgency: "",
   });
 
-  const [isRecording, setIsRecording] = useState(false);
-  const [recordingTime, setRecordingTime] = useState(0);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [photoPreview, setPhotoPreview] = useState(null);
-
-  const fileInputRef = useRef(null);
-  const mediaRecorderRef = useRef(null);
-  const recordingIntervalRef = useRef(null);
-  const { toast } = useToast();
-
-  const handleInputChange = (field, value) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+  const handlePhotoChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setFormData((prev) => ({
+        ...prev,
+        photo: file,
+        photoPreview: URL.createObjectURL(file),
+      }));
+    }
   };
 
-  const handleAssistanceTypeToggle = (type) => {
+  const handleLocationCapture = () => {
+    const mockLocation = {
+      lat: 14.5995,
+      lng: 120.9842,
+      address: "Makati City, Metro Manila, Philippines",
+    };
     setFormData((prev) => ({
       ...prev,
-      assistanceType: prev.assistanceType.includes(type)
-        ? prev.assistanceType.filter((t) => t !== type)
-        : [...prev.assistanceType, type],
+      location: mockLocation,
     }));
   };
 
-  const handlePhotoUpload = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setFormData((prev) => ({ ...prev, photo: file }));
-      const reader = new FileReader();
-      reader.onload = (e) => setPhotoPreview(e.target.result);
-      reader.readAsDataURL(file);
+  const handleTagToggle = (tag) => {
+    setFormData((prev) => ({
+      ...prev,
+      selectedTags: prev.selectedTags.includes(tag)
+        ? prev.selectedTags.filter((t) => t !== tag)
+        : [...prev.selectedTags, tag],
+    }));
+  };
+
+  const handleUrgencyChange = (e) => {
+    setFormData((prev) => ({
+      ...prev,
+      urgency: e.target.value,
+    }));
+  };
+
+  const handleNext = () => {
+    if (currentStep < steps.length - 1) {
+      setCurrentStep((prev) => prev + 1);
     }
   };
-
-  const removePhoto = () => {
-    setFormData((prev) => ({ ...prev, photo: null }));
-    setPhotoPreview(null);
-    if (fileInputRef.current) fileInputRef.current.value = "";
-  };
-
-  const startRecording = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
-      mediaRecorderRef.current = mediaRecorder;
-      const chunks = [];
-      mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
-      mediaRecorder.onstop = () => {
-        const blob = new Blob(chunks, { type: "audio/wav" });
-        setFormData((prev) => ({ ...prev, voiceRecording: blob }));
-        stream.getTracks().forEach((track) => track.stop());
-      };
-      mediaRecorder.start();
-      setIsRecording(true);
-      setRecordingTime(0);
-      recordingIntervalRef.current = setInterval(() => setRecordingTime((prev) => prev + 1), 1000);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Could not access microphone. Please check permissions.",
-        variant: "destructive",
-      });
+  const handleBack = () => {
+    if (currentStep > 0) {
+      setCurrentStep((prev) => prev - 1);
     }
   };
-
-  const stopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
-      if (recordingIntervalRef.current) clearInterval(recordingIntervalRef.current);
-    }
-  };
-
-  const removeRecording = () => {
-    setFormData((prev) => ({ ...prev, voiceRecording: null }));
-    setRecordingTime(0);
-  };
-
-  const getCurrentLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setFormData((prev) => ({
-            ...prev,
-            location: { lat: position.coords.latitude, lng: position.coords.longitude },
-          }));
-          toast({ title: "Location captured", description: "GPS coordinates recorded." });
-        },
-        () => {
-          toast({ title: "Error", description: "Enable GPS to capture location.", variant: "destructive" });
-        }
-      );
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    const caseId = `AID-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
-    const existingCases = JSON.parse(localStorage.getItem("volunteerCases") || "[]");
-    const newCase = { id: caseId, ...formData, status: "pending", createdAt: new Date().toISOString() };
-    localStorage.setItem("volunteerCases", JSON.stringify([...existingCases, newCase]));
-
-    toast({
-      title: "Case registered successfully!",
-      description: `Case ID: ${caseId}.`,
-    });
-
-    setFormData({
-      beneficiaryName: "",
-      age: "",
-      gender: "",
-      contactNumber: "",
-      address: "",
-      urgencyLevel: "",
-      assistanceType: [],
-      description: "",
-      medicalCondition: "",
-      estimatedCost: "",
-      photo: null,
-      voiceRecording: null,
-      location: null,
-    });
-    setPhotoPreview(null);
-    setRecordingTime(0);
-    setIsSubmitting(false);
-  };
-
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
+  const handleSubmit = () => {
+    console.log("Case submitted:", formData);
   };
 
   return (
-    <Form onSubmit={handleSubmit}>
-      {/* Beneficiary Info */}
-      <Card className="mb-4">
-        <Card.Body>
-          <h5 className="mb-3 text-primary">Beneficiary Information</h5>
-          <div className="row g-3">
-            <div className="col-md-6">
-              <Form.Group>
-                <Form.Label>Full Name *</Form.Label>
-                <Form.Control
-                  placeholder="Enter beneficiary's full name"
-                  value={formData.beneficiaryName}
-                  onChange={(e) => handleInputChange("beneficiaryName", e.target.value)}
-                  required
-                />
-              </Form.Group>
-            </div>
-            <div className="col-md-6">
-              <Form.Group>
-                <Form.Label>Age *</Form.Label>
-                <Form.Control
-                  type="number"
-                  placeholder="Enter age"
-                  value={formData.age}
-                  onChange={(e) => handleInputChange("age", e.target.value)}
-                  required
-                />
-              </Form.Group>
-            </div>
-          </div>
-          <div className="row g-3 mt-2">
-            <div className="col-md-6">
-              <Form.Group>
-                <Form.Label>Gender *</Form.Label>
-                <Form.Select
-                  value={formData.gender}
-                  onChange={(e) => handleInputChange("gender", e.target.value)}
-                  required
+    <div className="container py-4 d-flex justify-content-center" style={{ minHeight: "100vh", background: "#f3f4f8" }}>
+      <div className="card shadow-sm" style={{ borderRadius: "18px", maxWidth: "700px", width: "100%" }}>
+        <div className="card-body px-4 py-4" style={{ background: "#f7f8fa", borderTopLeftRadius: "18px", borderTopRightRadius: "18px" }}>
+          {/* Step Indicator */}
+          <div className="d-flex justify-content-between align-items-center mb-4 pt-2" style={{ gap: "12px" }}>
+            {steps.map((step, idx) => (
+              <div key={step} className="flex-grow-1 d-flex flex-column align-items-center">
+                <div
+                  className={`d-flex align-items-center justify-content-center rounded-circle`}
+                  style={{
+                    height: "38px",
+                    width: "38px",
+                    border: idx === currentStep ? "2px solid #1976d2" : "2px solid #dbe1e8",
+                    background: idx < currentStep ? "#22c55e" : idx === currentStep ? "#1976d2" : "#fff",
+                    color: idx <= currentStep ? "#fff" : "#1976d2",
+                    fontWeight: "600",
+                    fontSize: "17px",
+                    transition: "all .2s",
+                  }}
                 >
-                  <option value="">Select gender</option>
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
-                  <option value="other">Other</option>
-                </Form.Select>
-              </Form.Group>
-            </div>
-            <div className="col-md-6">
-              <Form.Group>
-                <Form.Label>Contact Number</Form.Label>
-                <Form.Control
-                  type="tel"
-                  placeholder="Enter contact number"
-                  value={formData.contactNumber}
-                  onChange={(e) => handleInputChange("contactNumber", e.target.value)}
-                />
-              </Form.Group>
-            </div>
-          </div>
-          <Form.Group className="mt-3">
-            <Form.Label>Address *</Form.Label>
-            <Form.Control
-              as="textarea"
-              rows={2}
-              placeholder="Enter complete address"
-              value={formData.address}
-              onChange={(e) => handleInputChange("address", e.target.value)}
-              required
-            />
-          </Form.Group>
-        </Card.Body>
-      </Card>
-
-      {/* Assistance Details */}
-      <Card className="mb-4">
-        <Card.Body>
-          <h5 className="mb-3 text-primary">Assistance Details</h5>
-          <div className="row g-3">
-            <div className="col-md-6">
-              <Form.Group>
-                <Form.Label>Urgency Level *</Form.Label>
-                <Form.Select
-                  value={formData.urgencyLevel}
-                  onChange={(e) => handleInputChange("urgencyLevel", e.target.value)}
-                  required
+                  {idx < currentStep ? <Check size={19} color="#fff" /> : idx + 1}
+                </div>
+                <div
+                  className="mt-1"
+                  style={{
+                    fontSize: "14px",
+                    color: idx === currentStep ? "#1976d2" : "#7b809b",
+                    fontWeight: idx === currentStep ? "600" : "400",
+                  }}
                 >
-                  <option value="">Select urgency</option>
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                  <option value="critical">Critical</option>
-                </Form.Select>
-              </Form.Group>
-            </div>
-            <div className="col-md-6">
-              <Form.Group>
-                <Form.Label>Estimated Cost (USD)</Form.Label>
-                <Form.Control
-                  type="number"
-                  placeholder="Enter estimated cost"
-                  value={formData.estimatedCost}
-                  onChange={(e) => handleInputChange("estimatedCost", e.target.value)}
-                />
-              </Form.Group>
-            </div>
+                  {step}
+                </div>
+              </div>
+            ))}
           </div>
-
-          <Form.Group className="mt-3">
-            <Form.Label>Assistance Type *</Form.Label>
+          <hr style={{ borderTop: "1px solid #ededed", marginBottom: "32px", marginTop: "-10px" }} />
+          {/* STEP 0: Basic Info */}
+          {currentStep === 0 && (
             <div>
-              {assistanceTypes.map((type) => (
-                <Badge
-                  key={type}
-                  className={`me-2 mb-2 p-2 ${formData.assistanceType.includes(type) ? "bg-primary" : "bg-light text-dark border"}`}
-                  style={{ cursor: "pointer" }}
-                  onClick={() => handleAssistanceTypeToggle(type)}
+              <h5 style={{ fontWeight: 600 }} className="mb-4">
+                Basic Information
+              </h5>
+              <div className="mb-3">
+                <label htmlFor="fullName" className="form-label" style={{ fontWeight: 500 }}>
+                  Full Name (Optional)
+                </label>
+                <input
+                  className="form-control"
+                  id="fullName"
+                  value={formData.fullName}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, fullName: e.target.value }))}
+                  style={{ background: "#f9fafc", borderRadius: "8px" }}
+                />
+              </div>
+              <div className="row mb-3 g-2">
+                <div className="col">
+                  <label htmlFor="age" className="form-label" style={{ fontWeight: 500 }}>
+                    Approximate Age
+                  </label>
+                  <input
+                    className="form-control"
+                    id="age"
+                    type="number"
+                    value={formData.age}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, age: e.target.value }))}
+                    style={{ background: "#f9fafc", borderRadius: "8px" }}
+                  />
+                </div>
+                <div className="col">
+                  <label htmlFor="gender" className="form-label" style={{ fontWeight: 500 }}>
+                    Gender
+                  </label>
+                  <select
+                    className="form-select"
+                    aria-label="Gender"
+                    id="gender"
+                    value={formData.gender}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, gender: e.target.value }))}
+                    style={{ background: "#f9fafc", borderRadius: "8px" }}
+                  >
+                    <option value="">Select</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+              </div>
+              <div className="mb-3">
+                <label htmlFor="primaryNeed" className="form-label" style={{ fontWeight: 500 }}>
+                  Primary Need *
+                </label>
+                <select
+                  className="form-select"
+                  id="primaryNeed"
+                  value={formData.primaryNeed}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, primaryNeed: e.target.value }))}
+                  required
+                  style={{ background: "#f9fafc", borderRadius: "8px" }}
                 >
-                  {type}
-                </Badge>
-              ))}
+                  <option value="">Select primary need</option>
+                  <option value="Food">Food</option>
+                  <option value="Shelter">Shelter</option>
+                  <option value="Medical">Medical</option>
+                  <option value="Transport">Transport</option>
+                  <option value="Livelihood">Livelihood</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <div className="mb-0">
+                <label htmlFor="notes" className="form-label" style={{ fontWeight: 500 }}>
+                  Notes *
+                </label>
+                <textarea
+                  id="notes"
+                  className="form-control"
+                  rows={4}
+                  required
+                  value={formData.notes}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, notes: e.target.value }))}
+                  placeholder="Describe the situation and what help is needed..."
+                  style={{ background: "#f9fafc", borderRadius: "8px" }}
+                />
+              </div>
             </div>
-          </Form.Group>
-
-          <Form.Group className="mt-3">
-            <Form.Label>Description / Notes</Form.Label>
-            <Form.Control
-              as="textarea"
-              rows={3}
-              placeholder="Additional description..."
-              value={formData.description}
-              onChange={(e) => handleInputChange("description", e.target.value)}
-            />
-          </Form.Group>
-
-          <Form.Group className="mt-3">
-            <Form.Label>Medical Condition (if any)</Form.Label>
-            <Form.Control
-              placeholder="Enter medical condition"
-              value={formData.medicalCondition}
-              onChange={(e) => handleInputChange("medicalCondition", e.target.value)}
-            />
-          </Form.Group>
-        </Card.Body>
-      </Card>
-
-      {/* Media Upload */}
-      <Card className="mb-4">
-        <Card.Body>
-          <h5 className="mb-3 text-primary">Media / Location</h5>
-
-          <Form.Group className="mb-3">
-            <Form.Label>Photo</Form.Label>
-            <div className="d-flex align-items-center gap-2">
-              <Form.Control type="file" accept="image/*" ref={fileInputRef} onChange={handlePhotoUpload} />
-              {photoPreview && (
-                <Button variant="outline-danger" onClick={removePhoto}>
-                  <FiX />
-                </Button>
+          )}
+          {/* STEP 1: Media Upload */}
+          {currentStep === 1 && (
+            <div>
+              <h5 style={{ fontWeight: 600 }} className="mb-4">
+                Media Upload
+              </h5>
+              {/* Photo */}
+              <div className="mb-4">
+                <label className="mb-2 fw-medium" style={{ fontWeight: 500 }}>
+                  Photo (Required)
+                </label>
+                <div
+                  className="mb-2 text-center"
+                  style={{
+                    border: "1.5px dashed #dbe1e8",
+                    background: "#fff",
+                    borderRadius: "10px",
+                    padding: "36px 10px 18px 10px",
+                  }}
+                >
+                  {!formData.photoPreview ? (
+                    <>
+                      <svg width="44" height="44" fill="none" stroke="#6d7580" strokeWidth="1.5" viewBox="0 0 24 24" className="mb-2" style={{ display: "block", margin: "0 auto 6px auto" }}>
+                        <path d="M4.5 18.5v-11A2.5 2.5 0 017 5h2m6 0h2a2.5 2.5 0 012.5 2.5v11a2.5 2.5 0 01-2.5 2.5H7A2.5 2.5 0 014.5 18.5z" />
+                        <circle cx="12" cy="13" r="3" />
+                      </svg>
+                      <div>
+                        <button
+                          type="button"
+                          className="btn btn-light border shadow-sm mt-2"
+                          style={{ borderRadius: "8px", fontWeight: "500" }}
+                          onClick={() => document.getElementById("photo-input").click()}
+                        >
+                          <Upload size={20} className="me-2" /> Upload Photo
+                        </button>
+                      </div>
+                      <p className="small text-muted mt-2" style={{ fontSize: "15px" }}>
+                        Max 5MB (JPG, PNG)
+                      </p>
+                    </>
+                  ) : (
+                    <div>
+                      <img
+                        src={formData.photoPreview}
+                        alt="Preview"
+                        className="img-fluid rounded mb-2"
+                        style={{ maxHeight: 180 }}
+                      />
+                      <button
+                        type="button"
+                        className="btn btn-outline-secondary px-3 mt-2"
+                        onClick={() => document.getElementById("photo-input").click()}
+                      >
+                        Change Photo
+                      </button>
+                    </div>
+                  )}
+                  <input
+                    id="photo-input"
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePhotoChange}
+                    className="d-none"
+                  />
+                </div>
+              </div>
+              {/* Voice Message */}
+              <div className="mb-4">
+                <label className="mb-2 fw-medium" style={{ fontWeight: 500 }}>
+                  Voice Message (Optional)
+                </label>
+                <div
+                  className="bg-white"
+                  style={{
+                    border: "1.5px solid #dbe1e8",
+                    borderRadius: "10px",
+                    padding: "0px",
+                  }}
+                >
+                  <button
+                    type="button"
+                    className="btn w-100 d-flex align-items-center justify-content-center bg-white"
+                    style={{
+                      height: "48px",
+                      fontWeight: "500",
+                      boxShadow: "none",
+                      color: "#000",
+                    }}
+                  >
+                    <Mic size={18} className="me-2" />
+                    Record Audio (Max 60s)
+                  </button>
+                </div>
+              </div>
+              {/* Location */}
+              <div className="mb-4">
+                <label className="mb-2 fw-medium" style={{ fontWeight: 500 }}>
+                  Location
+                </label>
+                <div
+                  className="bg-white"
+                  style={{
+                    border: "1.5px solid #dbe1e8",
+                    borderRadius: "10px",
+                    padding: "0px",
+                  }}
+                >
+                  <button
+                    type="button"
+                    className="btn w-100 d-flex align-items-center justify-content-center bg-white"
+                    style={{
+                      height: "48px",
+                      fontWeight: "500",
+                      boxShadow: "none",
+                      color: "#000",
+                    }}
+                    onClick={handleLocationCapture}
+                  >
+                    <MapPin size={18} className="me-2" />
+                    Capture Current Location
+                  </button>
+                  {formData.location.address && (
+                    <div className="small text-center py-2" style={{ color: "#494d53" }}>
+                      <div className="font-monospace text-muted">
+                        {formData.location.lat.toFixed(4)}, {formData.location.lng.toFixed(4)}
+                      </div>
+                      <div className="mt-1">{formData.location.address}</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+          {/* STEP 2: Tags & Urgency */}
+          {currentStep === 2 && (
+            <div>
+              {/* Tags */}
+              <div className="mb-4">
+                <label className="mb-2 fw-medium" style={{ fontWeight: 500 }}>
+                  Tags
+                </label>
+                <div className="d-flex flex-wrap" style={{ gap: "10px" }}>
+                  {tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="badge px-3 py-2 rounded-3"
+                      style={{
+                        background: "#fff",
+                        border: "1px solid #e5e7eb",
+                        color: "#444",
+                        fontSize: "15px",
+                        fontWeight: 500,
+                        cursor: "pointer",
+                        boxShadow: formData.selectedTags.includes(tag)
+                          ? "0 0 0 2px #2563eb"
+                          : "none",
+                        backgroundColor: formData.selectedTags.includes(tag)
+                          ? "#e8f0fe"
+                          : "#fff",
+                        transition: "all .15s",
+                      }}
+                      onClick={() => handleTagToggle(tag)}
+                    >
+                      {tag.replace("_", " ")}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              {/* Urgency */}
+              <div>
+                <label className="mb-2 fw-medium" style={{ fontWeight: 500 }}>
+                  Urgency Level *
+                </label>
+                <div className="pt-2">
+                  {[
+                    { value: "CRITICAL", label: "Life-threatening" },
+                    { value: "HIGH", label: "Immediate attention needed" },
+                    { value: "MEDIUM", label: "Important but not urgent" },
+                    { value: "LOW", label: "Can wait" },
+                  ].map(({ value, label }) => (
+                    <div key={value} className="form-check mb-2 d-flex align-items-center" style={{ gap: 8 }}>
+                      <input
+                        className="form-check-input"
+                        type="radio"
+                        name="urgency"
+                        id={value}
+                        value={value}
+                        checked={formData.urgency === value}
+                        onChange={handleUrgencyChange}
+                        style={{ marginTop: -2, marginRight: 10 }}
+                      />
+                      <label htmlFor={value} style={{ fontWeight: 700, fontSize: "16px", color: "#2563eb", marginRight: 6 }}>
+                        {value}
+                      </label>
+                      <span className="ms-1 text-muted" style={{ fontWeight: 400, fontSize: "15px" }}>
+                        ({label})
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+          {/* STEP 3: Review */}
+          {currentStep === 3 && (
+            <div>
+              <h5 style={{ fontWeight: 600 }} className="mb-4">
+                Review & Submit
+              </h5>
+              <div className="mb-3"><span className="text-secondary small">Name</span>
+                <div className="fw-medium">{formData.fullName || "Anonymous"}</div></div>
+              <div className="row mb-3">
+                <div className="col"><div className="text-secondary small">Age</div>
+                  <div className="fw-medium">{formData.age || "N/A"}</div></div>
+                <div className="col"><div className="text-secondary small">Gender</div>
+                  <div className="fw-medium">{formData.gender || "N/A"}</div></div>
+              </div>
+              <div className="mb-3"><div className="text-secondary small">Primary Need</div>
+                <div className="fw-medium">{formData.primaryNeed}</div></div>
+              <div className="mb-3"><div className="text-secondary small">Notes</div>
+                <div>{formData.notes}</div></div>
+              {formData.photoPreview && (
+                <div className="mb-3"><div className="text-secondary small mb-2">Photo</div>
+                  <img src={formData.photoPreview} alt="Preview" className="img-fluid rounded mb-2" style={{ maxHeight: 180 }} />
+                </div>
+              )}
+              {formData.location.address && (
+                <div className="mb-3"><div className="text-secondary small">Location</div>
+                  <div>{formData.location.address}</div></div>
+              )}
+              {formData.selectedTags.length > 0 && (
+                <div className="mb-3"><div className="text-secondary small mb-2">Tags</div>
+                  <div>
+                    {formData.selectedTags.map((tag) => (
+                      <span key={tag} className="badge rounded-pill bg-secondary text-white me-1">
+                        {tag.replace("_", " ")}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div className="mb-3"><div className="text-secondary small">Urgency</div>
+                <div className="fw-medium">{formData.urgency}</div></div>
+            </div>
+          )}
+          {/* Buttons */}
+          <div className="mt-4 d-flex">
+            <button
+              type="button"
+              className="btn btn-light px-4"
+              onClick={handleBack}
+              disabled={currentStep === 0}
+              style={{
+                borderRadius: "6px",
+                background: "#f3f8fe",
+                color: "#9daecb",
+                border: "none",
+                boxShadow: "none",
+                fontWeight: "500",
+              }}
+            >
+              Back
+            </button>
+            <div className="ms-auto">
+              {currentStep < steps.length - 1 ? (
+                <button
+                  type="button"
+                  className="btn px-4"
+                  style={{
+                    borderRadius: "6px",
+                    background: "#2563eb",
+                    color: "#fff",
+                    fontWeight: "500",
+                    border: "none",
+                  }}
+                  onClick={handleNext}
+                >
+                  Next
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="btn px-4"
+                  style={{
+                    borderRadius: "6px",
+                    background: "#2563eb",
+                    color: "#fff",
+                    fontWeight: "500",
+                    border: "none",
+                  }}
+                  onClick={handleSubmit}
+                >
+                  Submit Case
+                </button>
               )}
             </div>
-            {photoPreview && (
-              <img src={photoPreview} alt="Preview" className="mt-2 rounded" style={{ maxHeight: "150px" }} />
-            )}
-          </Form.Group>
-
-          <Form.Group className="mb-3">
-            <Form.Label>Voice Recording</Form.Label>
-            <div className="d-flex align-items-center gap-2">
-              {!isRecording && !formData.voiceRecording && (
-                <Button variant="primary" onClick={startRecording}>
-                  <FiMic /> Start Recording
-                </Button>
-              )}
-              {isRecording && (
-                <Button variant="danger" onClick={stopRecording}>
-                  <FiSquare /> Stop ({formatTime(recordingTime)})
-                </Button>
-              )}
-              {formData.voiceRecording && (
-                <>
-                  <audio controls src={URL.createObjectURL(formData.voiceRecording)} className="me-2" />
-                  <Button variant="outline-danger" onClick={removeRecording}>
-                    <FiX />
-                  </Button>
-                </>
-              )}
-            </div>
-          </Form.Group>
-
-          <Form.Group>
-            <Form.Label>GPS Location</Form.Label>
-            <div className="d-flex align-items-center gap-2">
-              <Button variant="secondary" onClick={getCurrentLocation}>
-                <FiMapPin /> Capture Location
-              </Button>
-              {formData.location && (
-                <Badge bg="success">
-                  {formData.location.lat.toFixed(4)}, {formData.location.lng.toFixed(4)}
-                </Badge>
-              )}
-            </div>
-          </Form.Group>
-        </Card.Body>
-      </Card>
-
-      <Button type="submit" className="w-100" disabled={isSubmitting}>
-        {isSubmitting ? "Submitting..." : "Register Case"}
-      </Button>
-    </Form>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

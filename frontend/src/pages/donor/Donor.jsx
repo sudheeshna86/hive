@@ -1,44 +1,24 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React from "react";
 import DonorDashboard from "../../components/donor/DonorDashboard";
 
 export default function DonorPage() {
-  const [user, setUser] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const navigate = useNavigate();
+  // Get user from localStorage
+  const userData = localStorage.getItem("user");
+  const parsedUser = userData ? JSON.parse(userData) : null;
 
-  useEffect(() => {
-    const userData = localStorage.getItem("user");
-    if (!userData) {
-      navigate("/");
-      return;
-    }
-
-    const parsedUser = JSON.parse(userData);
-    if (parsedUser.role !== "donor") {
-      navigate("/");
-      return;
-    }
-
-    setUser(parsedUser);
-    setIsLoading(false);
-  }, [navigate]);
-
-  if (isLoading) {
-    return (
-      <div className="d-flex justify-content-center align-items-center vh-100">
-        <div
-          className="spinner-border text-primary"
-          role="status"
-          style={{ width: "8rem", height: "8rem" }}
-        >
-          <span className="visually-hidden">Loading...</span>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) return null;
+  // Assign dummy user if none or wrong role
+  const user =
+    parsedUser && parsedUser.role === "donor"
+      ? parsedUser
+      : {
+          id: "dummy-donor-001",
+          name: "Demo Donor",
+          role: "donor",
+          organization: "Demo Donor Org",
+          email: "demo@donor.com",
+          phone: "9999999999",
+          extraInfo: { totalDonations: 5, activeCases: 3 },
+        };
 
   return <DonorDashboard user={user} />;
 }

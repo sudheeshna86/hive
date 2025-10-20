@@ -1,215 +1,220 @@
 import React, { useState, useEffect } from "react";
-import { Eye, MapPin, Clock, DollarSign, User } from "lucide-react";
+import { Eye, Calendar, MapPin } from "lucide-react";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 export function CaseMonitoring() {
   const [cases, setCases] = useState([]);
-  const [selectedCase, setSelectedCase] = useState(null);
+  const [selectedCaseId, setSelectedCaseId] = useState(null);
   const [filter, setFilter] = useState("all");
 
+  const dummyCases = [
+    {
+      id: "CASE-001",
+      title: "Medical Assistance for John",
+      location: "Mumbai, India",
+      status: "in-progress",
+      createdAt: "2025-09-01T10:00:00Z",
+      timeline: [
+        {
+          step: "Case registered",
+          description: "Volunteer submitted case details",
+          date: "2025-09-01",
+          actor: "Priya Sharma",
+        },
+        {
+          step: "Verification",
+          description: "Case verified by admin",
+          date: "2025-09-02",
+          actor: "System",
+        },
+        {
+          step: "Funds Allocated",
+          description: "$500 allocated",
+          date: "2025-09-03",
+          actor: "NGO",
+        },
+        {
+          step: "Service Delivered",
+          description: "Medical treatment provided",
+          date: "2025-09-05",
+          actor: "Dr. Anjali Gupta",
+          proof: true,
+        },
+      ],
+    },
+    {
+      id: "CASE-002",
+      title: "Food Relief for Elderly",
+      location: "Delhi, India",
+      status: "pending",
+      createdAt: "2025-09-05T12:00:00Z",
+      timeline: [
+        {
+          step: "Case registered",
+          description: "Food aid case submitted",
+          date: "2025-09-05",
+          actor: "Rahul Verma",
+        },
+      ],
+    },
+    {
+      id: "CASE-003",
+      title: "Shelter Support for Flood Victims",
+      location: "Chennai, India",
+      status: "completed",
+      createdAt: "2025-09-03T09:30:00Z",
+      timeline: [
+        {
+          step: "Case registered",
+          description: "Flood relief case added",
+          date: "2025-09-03",
+          actor: "Anita Kumar",
+        },
+        {
+          step: "Verification",
+          description: "Verified successfully",
+          date: "2025-09-04",
+          actor: "System",
+        },
+        {
+          step: "Completed",
+          description: "Shelter provided",
+          date: "2025-09-06",
+          actor: "NGO",
+        },
+      ],
+    },
+  ];
+
   useEffect(() => {
-    loadCases();
+    setCases(dummyCases);
   }, []);
 
-  const loadCases = () => {
-    const allCases = JSON.parse(localStorage.getItem("volunteerCases") || "[]");
-    const activeCases = allCases.filter((c) => c.status !== "pending");
-    setCases(activeCases);
-  };
+  const filteredCases =
+    filter === "all" ? cases : cases.filter((c) => c.status === filter);
 
-  const getStatusColor = (status) => {
+  const selectedCase = cases.find((c) => c.id === selectedCaseId);
+
+  const getBadgeClass = (status) => {
     switch (status) {
-      case "verified":
+      case "in-progress":
+        return "bg-warning text-dark";
+      case "completed":
+        return "bg-success text-white";
+      case "pending":
         return "bg-primary text-white";
-      case "funded":
-        return "bg-success text-white";
-      case "in-progress":
-        return "bg-warning text-dark";
-      case "completed":
-        return "bg-success text-white";
-      case "rejected":
-        return "bg-danger text-white";
       default:
         return "bg-secondary text-white";
     }
   };
-
-  const getUrgencyColor = (urgency) => {
-    switch (urgency) {
-      case "critical":
-        return "bg-danger text-white";
-      case "high":
-        return "bg-warning text-dark";
-      case "medium":
-        return "bg-info text-dark";
-      case "low":
-        return "bg-success text-white";
-      default:
-        return "bg-secondary text-white";
-    }
-  };
-
-  const getProgressPercentage = (status) => {
-    switch (status) {
-      case "verified":
-        return 40;
-      case "funded":
-        return 60;
-      case "in-progress":
-        return 80;
-      case "completed":
-        return 100;
-      case "rejected":
-        return 0;
-      default:
-        return 0;
-    }
-  };
-
-  const filteredCases = cases.filter((caseItem) => {
-    if (filter === "all") return true;
-    return caseItem.status === filter;
-  });
-
-  if (cases.length === 0) {
-    return (
-      <div className="text-center py-5">
-        <div className="bg-light rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style={{ width: 64, height: 64 }}>
-          <Eye size={32} className="text-secondary" />
-        </div>
-        <h5>No active cases</h5>
-        <p className="text-secondary">Cases will appear here once they are verified.</p>
-      </div>
-    );
-  }
 
   return (
-    <div className="container my-4">
-      {/* Filter Buttons */}
-      <div className="d-flex flex-wrap gap-2 mb-3">
-        {["all", "verified", "funded", "in-progress", "completed"].map((status) => (
-          <button
-            key={status}
-            className={`btn btn-${filter === status ? "primary" : "outline-primary"} btn-sm`}
-            onClick={() => setFilter(status)}
-          >
-            {status.charAt(0).toUpperCase() + status.slice(1)} ({cases.filter((c) => status === "all" ? true : c.status === status).length})
-          </button>
-        ))}
-      </div>
+    <div className="container py-4">
+      <h4 className="fw-bold mb-3">Case Monitoring</h4>
 
-      {/* Cases List */}
-      <div className="row g-3">
-        {filteredCases.map((caseItem) => (
-          <div key={caseItem.id} className="col-12">
+      {/* Tabs */}
+      <ul className="nav nav-tabs mb-4">
+        {["all", "pending", "in-progress", "completed"].map((tab) => (
+          <li className="nav-item" key={tab}>
+            <button
+              className={`nav-link ${
+                filter === tab ? "active" : ""
+              } text-capitalize`}
+              onClick={() => setFilter(tab)}
+            >
+              {tab.replace("-", " ")}
+            </button>
+          </li>
+        ))}
+      </ul>
+
+      <div className="row g-4">
+        {/* Case List */}
+        <div className="col-md-6">
+          {filteredCases.map((c) => (
+            <div
+              key={c.id}
+              className={`card shadow-sm mb-3 border ${
+                selectedCaseId === c.id ? "border-success" : "border-light"
+              }`}
+              style={{ cursor: "pointer" }}
+              onClick={() => setSelectedCaseId(c.id)}
+            >
+              <div className="card-body">
+                <div className="d-flex justify-content-between align-items-center mb-2">
+                  <h6 className="mb-0">{c.title}</h6>
+                  <span className={`badge ${getBadgeClass(c.status)}`}>
+                    {c.status}
+                  </span>
+                </div>
+                <p className="text-muted mb-1">
+                  <Calendar size={14} className="me-1" />
+                  {new Date(c.createdAt).toLocaleDateString()}
+                </p>
+                <p className="text-muted mb-0">
+                  <MapPin size={14} className="me-1" />
+                  {c.location}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Timeline */}
+        <div className="col-md-6">
+          {selectedCase ? (
             <div className="card shadow-sm">
-              <div className="card-header d-flex justify-content-between align-items-center">
-                <div className="d-flex align-items-center gap-2">
-                  <h5 className="mb-0">{caseItem.id}</h5>
-                  <span className={`badge ${getUrgencyColor(caseItem.urgencyLevel)}`}>{caseItem.urgencyLevel}</span>
-                </div>
-                <div className="d-flex align-items-center gap-2">
-                  <span className={`badge ${getStatusColor(caseItem.status)} text-capitalize`}>{caseItem.status}</span>
-                  <button className="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1" onClick={() => setSelectedCase(caseItem)}>
-                    <Eye size={16} /> View
-                  </button>
-                </div>
+              <div className="card-header fw-semibold">
+                Case Timeline - {selectedCase.title}
               </div>
               <div className="card-body">
-                <div className="d-flex flex-wrap gap-3 mb-2 text-muted small">
-                  <span className="d-flex align-items-center gap-1"><User size={14} /> {caseItem.beneficiaryName}</span>
-                  <span className="d-flex align-items-center gap-1"><Clock size={14} /> {new Date(caseItem.createdAt).toLocaleDateString()}</span>
-                  <span className="d-flex align-items-center gap-1"><MapPin size={14} /> {caseItem.address.substring(0, 30)}...</span>
-                </div>
-                <div className="mb-2 d-flex flex-wrap gap-1">
-                  {caseItem.assistanceType.map((type) => (
-                    <span key={type} className="badge bg-secondary">{type}</span>
-                  ))}
-                </div>
-                <p className="text-truncate">{caseItem.description}</p>
-                <div className="d-flex justify-content-between small mb-1">
-                  <span>Progress</span>
-                  <span>{getProgressPercentage(caseItem.status)}%</span>
-                </div>
-                <div className="progress mb-2" style={{ height: "8px" }}>
-                  <div
-                    className="progress-bar"
-                    role="progressbar"
-                    style={{ width: `${getProgressPercentage(caseItem.status)}%` }}
-                    aria-valuenow={getProgressPercentage(caseItem.status)}
-                    aria-valuemin="0"
-                    aria-valuemax="100"
-                  ></div>
-                </div>
-                {caseItem.estimatedCost && (
-                  <div className="d-flex align-items-center gap-1 small">
-                    <DollarSign size={14} /> Est. Cost: ${caseItem.estimatedCost}
+                {selectedCase.timeline && selectedCase.timeline.length > 0 ? (
+                  <ul className="list-group list-group-flush">
+                    {selectedCase.timeline.map((item, idx) => (
+                      <li key={idx} className="list-group-item">
+                        <div className="fw-semibold">
+                          {idx + 1}. {item.step}
+                        </div>
+                        <small className="text-muted d-block mb-1">
+                          {item.date}
+                        </small>
+                        <p className="mb-1">{item.description}</p>
+                        {item.actor && (
+                          <small className="text-muted d-block">
+                            By: {item.actor}
+                          </small>
+                        )}
+                        {item.amount && (
+                          <span className="text-success fw-bold d-block">
+                            {item.amount}
+                          </span>
+                        )}
+                        {item.proof && (
+                          <button className="btn btn-outline-primary btn-sm mt-2">
+                            View Proof
+                          </button>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div className="text-center text-muted py-5">
+                    <Eye size={32} className="opacity-50 mb-2" />
+                    <p>No timeline available for this case</p>
                   </div>
                 )}
               </div>
             </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Case Detail Modal */}
-      {selectedCase && (
-        <div className="modal show d-block" tabIndex="-1">
-          <div className="modal-dialog modal-lg modal-dialog-scrollable">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">{selectedCase.id}</h5>
-                <button type="button" className="btn-close" onClick={() => setSelectedCase(null)}></button>
-              </div>
-              <div className="modal-body">
-                <div className="row mb-3">
-                  <div className="col-md-6">
-                    <small className="text-muted">Beneficiary</small>
-                    <p>{selectedCase.beneficiaryName}</p>
-                  </div>
-                  <div className="col-md-6">
-                    <small className="text-muted">Status</small>
-                    <span className={`badge ${getStatusColor(selectedCase.status)} text-capitalize`}>{selectedCase.status}</span>
-                  </div>
-                  <div className="col-md-6">
-                    <small className="text-muted">Urgency</small>
-                    <span className={`badge ${getUrgencyColor(selectedCase.urgencyLevel)}`}>{selectedCase.urgencyLevel}</span>
-                  </div>
-                  <div className="col-md-6">
-                    <small className="text-muted">Assistance Type</small>
-                    <p>{selectedCase.assistanceType.join(", ")}</p>
-                  </div>
-                </div>
-                <div className="mb-2">
-                  <small className="text-muted">Description</small>
-                  <p>{selectedCase.description}</p>
-                </div>
-                <div className="mb-2">
-                  <small className="text-muted">Address</small>
-                  <p>{selectedCase.address}</p>
-                </div>
-                <div className="row mb-2">
-                  <div className="col-md-6">
-                    <small className="text-muted">Created Date</small>
-                    <p>{new Date(selectedCase.createdAt).toLocaleDateString()}</p>
-                  </div>
-                  {selectedCase.verifiedAt && (
-                    <div className="col-md-6">
-                      <small className="text-muted">Verified Date</small>
-                      <p>{new Date(selectedCase.verifiedAt).toLocaleDateString()}</p>
-                    </div>
-                  )}
-                </div>
-                {selectedCase.estimatedCost && (
-                  <div className="mb-2">
-                    <small className="text-muted">Estimated Cost</small>
-                    <p>${selectedCase.estimatedCost}</p>
-                  </div>
-                )}
+          ) : (
+            <div className="card shadow-sm">
+              <div className="card-body text-center text-muted py-5">
+                <Eye size={32} className="opacity-50 mb-2" />
+                <p>Select a case to view timeline</p>
               </div>
             </div>
-          </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }

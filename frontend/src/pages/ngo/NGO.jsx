@@ -1,44 +1,24 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React from "react";
 import NGODashboard from "../../components/ngo/NGODashboard";
 
 export default function NGOPage() {
-  const [user, setUser] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const navigate = useNavigate();
+  // Get user from localStorage
+  const userData = localStorage.getItem("user");
+  const parsedUser = userData ? JSON.parse(userData) : null;
 
-  useEffect(() => {
-    const userData = localStorage.getItem("user");
-    if (!userData) {
-      navigate("/");
-      return;
-    }
-
-    const parsedUser = JSON.parse(userData);
-    if (parsedUser.role !== "ngo") {
-      navigate("/");
-      return;
-    }
-
-    setUser(parsedUser);
-    setIsLoading(false);
-  }, [navigate]);
-
-  if (isLoading) {
-    return (
-      <div className="d-flex justify-content-center align-items-center vh-100">
-        <div
-          className="spinner-border text-primary"
-          role="status"
-          style={{ width: "8rem", height: "8rem" }}
-        >
-          <span className="visually-hidden">Loading...</span>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) return null;
+  // Assign dummy user if none or wrong role
+  const user =
+    parsedUser && parsedUser.role === "ngo"
+      ? parsedUser
+      : {
+          id: "dummy-ngo-001",
+          name: "Demo NGO Admin",
+          role: "ngo",
+          organization: "Demo NGO Organization",
+          email: "demo@ngo.com",
+          phone: "9999999999",
+          extraInfo: { totalSchemes: 5, verifiedCases: 10 },
+        };
 
   return <NGODashboard user={user} />;
 }

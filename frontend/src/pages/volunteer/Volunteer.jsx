@@ -1,44 +1,25 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React from "react";
 import VolunteerDashboard from "../../components/volunteer/VolunteerDashboard";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 export default function VolunteerPage() {
-  const [user, setUser] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const navigate = useNavigate();
+  // Get user from localStorage or assign dummy
+  const userData = localStorage.getItem("user");
+  const parsedUser = userData ? JSON.parse(userData) : null;
 
-  useEffect(() => {
-    const userData = localStorage.getItem("user");
-    if (!userData) {
-      navigate("/");
-      return;
-    }
-
-    const parsedUser = JSON.parse(userData);
-    if (parsedUser.role !== "volunteer") {
-      navigate("/");
-      return;
-    }
-
-    setUser(parsedUser);
-    setIsLoading(false);
-  }, [navigate]);
-
-  if (isLoading) {
-    return (
-      <div className="d-flex justify-content-center align-items-center vh-100">
-        <div
-          className="spinner-border text-primary"
-          role="status"
-          style={{ width: "8rem", height: "8rem" }}
-        >
-          <span className="visually-hidden">Loading...</span>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) return null;
+  // If no user or wrong role, assign dummy
+  const user =
+    parsedUser && parsedUser.role === "volunteer"
+      ? parsedUser
+      : {
+          id: "dummy-vol-001",
+          name: "Demo Volunteer",
+          role: "volunteer",
+          organization: "Demo Volunteer Org",
+          email: "demo@volunteer.com",
+          phone: "9999999999",
+          extraInfo: { completedCases: 0, ongoingCases: 0 },
+        };
 
   return <VolunteerDashboard user={user} />;
 }

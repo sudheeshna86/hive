@@ -15,48 +15,94 @@ export function LoginForm() {
   const green = "#257a47";
 
   const handleLogin = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError("");
+  e.preventDefault();
+  setIsLoading(true);
+  setError("");
 
-    // Simulate login
-    await new Promise((resolve) => setTimeout(resolve, 500));
+  // Simulate login delay
+  await new Promise((resolve) => setTimeout(resolve, 500));
 
-    // User data object
-    const userData = {
-      email: emailOrPhone,
-      role: role,
-      name: emailOrPhone.includes("@") ? emailOrPhone.split("@")[0] : emailOrPhone,
-      id: Math.random().toString(36).substr(2, 9),
-    };
-
-    // Save session
-    if (rememberMe) localStorage.setItem("user", JSON.stringify(userData));
-    else sessionStorage.setItem("user", JSON.stringify(userData));
-
-    // Navigate based on role
-    switch (role) {
-      case "volunteer":
-        navigate("/volunteer");
-        break;
-      case "ngo":
-        navigate("/ngo");
-        break;
-      case "donor":
-        navigate("/donor");
-        break;
-      case "service-provider":
-        navigate("/service-provider");
-        break;
-      case "admin":
-        navigate("/admin");
-        break;
-      default:
-        setError("Please select a valid role");
-    }
-
-    setIsLoading(false);
+  // Dummy user data based on role
+  let userData = {
+    email: emailOrPhone,
+    role: role,
+    name: emailOrPhone.includes("@") ? emailOrPhone.split("@")[0] : emailOrPhone,
+    id: Math.random().toString(36).substr(2, 9),
+    organization: "",
+    phone: "9999999999",
+    address: "123 Demo Street",
+    profilePic: "", // optional
+    extraInfo: {},
   };
+
+  switch (role) {
+    case "volunteer":
+      userData = {
+        ...userData,
+        organization: "Volunteer Group",
+        extraInfo: { completedCases: 0, ongoingCases: 0 },
+      };
+      break;
+    case "ngo":
+      userData = {
+        ...userData,
+        organization: "Demo NGO",
+        extraInfo: { totalSchemes: 5, verifiedCases: 10 },
+      };
+      break;
+    case "donor":
+      userData = {
+        ...userData,
+        organization: "Demo Donor Org",
+        extraInfo: { donatedAmount: 1000, donationsCount: 3 },
+      };
+      break;
+    case "service-provider":
+      userData = {
+        ...userData,
+        organization: "Demo Service Provider",
+        extraInfo: { activeTasks: 2, completedTasks: 5 },
+      };
+      break;
+    case "admin":
+      userData = {
+        ...userData,
+        organization: "Admin Panel",
+        extraInfo: { totalUsers: 50, totalCases: 100 },
+      };
+      break;
+    default:
+      setError("Please select a valid role");
+      setIsLoading(false);
+      return;
+  }
+
+  // Save session
+  if (rememberMe) localStorage.setItem("user", JSON.stringify(userData));
+  else sessionStorage.setItem("user", JSON.stringify(userData));
+
+  // Navigate based on role
+  switch (role) {
+    case "volunteer":
+      navigate("/volunteer");
+      break;
+    case "ngo":
+      navigate("/ngo");
+      break;
+    case "donor":
+      navigate("/donor");
+      break;
+    case "service-provider":
+      navigate("/service-provider");
+      break;
+    case "admin":
+      navigate("/admin");
+      break;
+  }
+
+  setIsLoading(false);
+};
+
 
   return (
     <motion.div
