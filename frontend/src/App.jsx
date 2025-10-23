@@ -12,6 +12,7 @@ import { RegisterForm } from "./components/auth/RegisterForm.jsx";
 import { DonorRegisterForm } from "./components/auth/DonorRegisterForm.jsx";
 import { ServiceProviderRegisterForm } from "./components/auth/ServiceProviderRegisterForm.jsx";
 import { LoginForm } from "./components/auth/LoginForm.jsx";
+import  CaseDetailsPage  from "./components/donor/CaseTimelineSteps.jsx";
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
         <Route path="/donor" element={<DonorPage />} />
         <Route path="/service-provider" element={<ServiceProviderPage />} />
         <Route path="/admin" element={<AdminPage />} />
+<Route path="/case/:id" element={<CaseDetailsPage />} />
 
         <Route path="/register/donor" element={<DonorRegisterForm />} />
         <Route path="/register/serviceprovider" element={<ServiceProviderRegisterForm />} />

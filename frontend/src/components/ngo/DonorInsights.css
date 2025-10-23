@@ -1,0 +1,47 @@
+.donor-insights-container {
+  background-color: #f8fafc;
+  padding: 20px;
+  border-radius: 12px;
+}
+
+.summary-card {
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  transition: transform 0.2s ease;
+}
+
+.summary-card:hover {
+  transform: translateY(-3px);
+}
+
+.summary-amount {
+  font-size: 1.6rem;
+  font-weight: bold;
+}
+
+.summary-label {
+  color: #6c757d;
+}
+
+.chart-placeholder,
+.heatmap-placeholder {
+  height: 220px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #f9fafb, #f1f5f9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.modern-table th {
+  background-color: #f1f5f9;
+  color: #374151;
+}
+
+.modern-table tr:hover {
+  background-color: #f9fafb;
+  transition: 0.2s ease;
+}

@@ -1,0 +1,211 @@
+/* Container styling */
+.container {
+  font-family: "Inter", "Segoe UI", sans-serif;
+  color: #1f2937;
+}
+
+/* Header */
+.container h5 {
+  color: #111827;
+  font-weight: 700;
+}
+
+.text-muted {
+  color: #6b7280 !important;
+}
+
+/* Buttons */
+.btn {
+  border-radius: 10px !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-success {
+  background-color: #16a34a !important;
+  border: none !important;
+}
+
+.btn-success:hover {
+  background-color: #15803d !important;
+  transform: translateY(-1px);
+}
+
+.btn-outline-secondary {
+  border-color: #d1d5db !important;
+  color: #374151 !important;
+}
+
+.btn-outline-secondary:hover {
+  background-color: #f3f4f6 !important;
+}
+
+.btn-outline-primary {
+  border-color: #93c5fd !important;
+  color: #1d4ed8 !important;
+}
+
+.btn-outline-primary:hover {
+  background-color: #eff6ff !important;
+}
+
+.btn-outline-danger {
+  border-color: #fecaca !important;
+  color: #dc2626 !important;
+}
+
+.btn-outline-danger:hover {
+  background-color: #fee2e2 !important;
+}
+
+/* Filter tabs (All / Funded) */
+.btn-light {
+  border-radius: 20px !important;
+  font-weight: 500;
+}
+
+.btn-light.fw-bold {
+  border: 2px solid #16a34a !important;
+}
+
+/* Cards */
+.card {
+  border-radius: 1rem !important;
+  border: 1px solid #e5e7eb !important;
+  background-color: #ffffff !important;
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+  transform: translateY(-3px);
+}
+
+/* Card Body */
+.card-body {
+  padding: 1.25rem !important;
+}
+
+/* Scheme header */
+.card h6 {
+  font-weight: 600;
+  color: #111827;
+}
+
+/* Badges */
+.badge {
+  font-weight: 500 !important;
+  border-radius: 8px !important;
+  text-transform: capitalize;
+  letter-spacing: 0.2px;
+  padding: 6px 12px !important;
+}
+
+.bg-success {
+  background-color: #16a34a !important;
+}
+
+.bg-danger {
+  background-color: #dc2626 !important;
+}
+
+.bg-warning {
+  background-color: #facc15 !important;
+}
+
+.bg-primary {
+  background-color: #2563eb !important;
+}
+
+.bg-info {
+  background-color: #06b6d4 !important;
+}
+
+.bg-secondary {
+  background-color: #6b7280 !important;
+}
+
+.bg-dark {
+  background-color: #111827 !important;
+}
+
+/* Progress Bars */
+.progress {
+  height: 8px !important;
+  border-radius: 8px !important;
+  background-color: #f3f4f6 !important;
+  margin-top: 4px;
+}
+
+.progress-bar {
+  border-radius: 8px !important;
+  transition: width 0.4s ease;
+}
+
+/* Form Card */
+form .form-label {
+  font-weight: 600;
+  color: #374151;
+}
+
+form .form-control,
+form .form-select {
+  border-radius: 10px !important;
+  border: 1px solid #d1d5db !important;
+  transition: border 0.2s ease, box-shadow 0.2s ease;
+}
+
+form .form-control:focus,
+form .form-select:focus {
+  border-color: #16a34a !important;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2) !important;
+}
+
+/* Small text */
+.small {
+  font-size: 0.875rem;
+}
+
+/* Date Text */
+.text-muted.small {
+  color: #6b7280 !important;
+  font-style: italic;
+}
+
+/* Card Hover Animation */
+.card.shadow-sm:hover {
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.06);
+}
+
+/* Smooth hover for icons */
+.btn-sm {
+  border-radius: 6px !important;
+}
+
+.btn-sm:hover svg {
+  transform: scale(1.1);
+  transition: transform 0.2s ease-in-out;
+}
+
+/* Responsive Layout */
+@media (max-width: 768px) {
+  .row {
+    margin: 0;
+  }
+
+  .col-md-4 {
+    padding: 0 6px;
+  }
+
+  .card {
+    border-radius: 14px !important;
+  }
+
+  .btn {
+    font-size: 14px !important;
+  }
+
+  form .form-label {
+    font-size: 14px;
+  }
+}

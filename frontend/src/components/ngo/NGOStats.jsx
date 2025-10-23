@@ -8,12 +8,11 @@ export function NGOStats() {
     verifiedCases: 0,
     rejectedCases: 0,
     pendingCases: 0,
-    vouchersIssued: 0, // Add this if vouchers count is needed
+    vouchersIssued: 0,
   });
 
   useEffect(() => {
     const cases = JSON.parse(localStorage.getItem("volunteerCases") || "[]");
-    // Example: Count vouchers if your data supports it, or remove line if not relevant
     const totalVouchers = cases.reduce((acc, c) => acc + (c.vouchersIssued || 0), 0);
     const newStats = {
       totalCases: cases.length,
@@ -54,7 +53,6 @@ export function NGOStats() {
       color: "text-danger",
       subtitle: "Declined cases",
     },
-    // Uncomment and include this card if you want to show vouchers issued
     {
       title: "Vouchers Issued",
       value: stats.vouchersIssued,
@@ -66,30 +64,37 @@ export function NGOStats() {
 
   return (
     <div className="container my-3">
-      <div className="row g-3">
+      <div className="d-flex flex-wrap flex-lg-nowrap justify-content-between gap-3 overflow-auto">
         {statCards.map((card, index) => (
-          <div className="col-12 col-md-6 col-lg-3" key={index}>
-            <div
-              className="card shadow-sm border-0 h-100"
-              style={{
-                borderRadius: 16,
-                animation: `fadeInUp 0.4s ease ${index * 0.1}s both`,
-                background: "#fff", // ensures white
-                minHeight: 136, // matches your design
-              }}
-            >
-              <div className="card-body d-flex flex-column justify-content-between h-100">
-                <div className="d-flex justify-content-between align-items-center mb-2">
-                  <h6 className="fw-semibold mb-0">{card.title}</h6>
-                  {card.icon}
-                </div>
-                <h2 className={`fw-bold ${card.color} mb-1`} style={{fontSize: "2.2rem"}}>{card.value}</h2>
-                <p className="text-muted small mb-0">{card.subtitle}</p>
+          <div
+            key={index}
+            className="card shadow-sm border-0 flex-fill"
+            style={{
+              minWidth: "200px",
+              borderRadius: 16,
+              animation: `fadeInUp 0.4s ease ${index * 0.1}s both`,
+              background: "#fff",
+              minHeight: 136,
+              flex: "1 1 0",
+            }}
+          >
+            <div className="card-body d-flex flex-column justify-content-between h-100">
+              <div className="d-flex justify-content-between align-items-center mb-2">
+                <h6 className="fw-semibold mb-0">{card.title}</h6>
+                {card.icon}
               </div>
+              <h2
+                className={`fw-bold ${card.color} mb-1`}
+                style={{ fontSize: "2.2rem" }}
+              >
+                {card.value}
+              </h2>
+              <p className="text-muted small mb-0">{card.subtitle}</p>
             </div>
           </div>
         ))}
       </div>
+
       <style>{`
         @keyframes fadeInUp {
           from { opacity: 0; transform: translateY(10px);}

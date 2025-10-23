@@ -1,284 +1,312 @@
-import React, { useState, useEffect } from "react";
-import { FaHeart, FaUser, FaMapMarkerAlt, FaClock, FaFilter } from "react-icons/fa";
+import React, { useState } from "react";
+import { Form, Button, ProgressBar, Badge } from "react-bootstrap";
+import { ClipboardList, ShieldCheck, HeartHandshake, BadgeDollarSign, CheckCircle2 } from "lucide-react";
 
-export default function VerifiedCasesList() {
-  const [cases, setCases] = useState([]);
-  const [filteredCases, setFilteredCases] = useState([]);
-  const [selectedCase, setSelectedCase] = useState(null);
-  const [showDonationModal, setShowDonationModal] = useState(false);
-  const [filters, setFilters] = useState({
-    urgency: "all",
-    assistanceType: "all",
-    fundingStatus: "all",
-  });
-  const [searchTerm, setSearchTerm] = useState("");
+const STEP_ICONS = [
+  <ClipboardList size={26} className="text-primary" />,
+  <ShieldCheck size={26} className="text-primary" />,
+  <HeartHandshake size={26} className="text-success" />,
+  <BadgeDollarSign size={26} className="text-success" />,
+  <CheckCircle2 size={26} className="text-success" />,
+  <BadgeDollarSign size={26} className="text-success" />
+];
 
-  useEffect(() => {
-    loadVerifiedCases();
-  }, []);
-
-  useEffect(() => {
-    applyFilters();
-  }, [cases, filters, searchTerm]);
-
-  const loadVerifiedCases = () => {
-    const allCases = JSON.parse(localStorage.getItem("volunteerCases") || "[]");
-    const verified = allCases
-      .filter((c) => c.status === "verified" || c.status === "funded" || c.status === "in-progress")
-      .map((c) => ({
-        ...c,
-        currentFunding: Math.floor(Math.random() * parseFloat(c.estimatedCost || "1000")),
-        fundingGoal: parseFloat(c.estimatedCost || "1000"),
-        donorCount: Math.floor(Math.random() * 20) + 1,
-      }));
-    setCases(verified);
-  };
-
-  const applyFilters = () => {
-    let filtered = [...cases];
-
-    if (searchTerm) {
-      filtered = filtered.filter(
-        (c) =>
-          c.beneficiaryName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          c.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          c.address.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    if (filters.urgency !== "all") {
-      filtered = filtered.filter((c) => c.urgencyLevel === filters.urgency);
-    }
-
-    if (filters.assistanceType !== "all") {
-      filtered = filtered.filter((c) => c.assistanceType.includes(filters.assistanceType));
-    }
-
-    if (filters.fundingStatus !== "all") {
-      if (filters.fundingStatus === "urgent") {
-        filtered = filtered.filter((c) => c.currentFunding < c.fundingGoal * 0.3);
-      } else if (filters.fundingStatus === "partial") {
-        filtered = filtered.filter(
-          (c) => c.currentFunding >= c.fundingGoal * 0.3 && c.currentFunding < c.fundingGoal
-        );
-      } else if (filters.fundingStatus === "nearly-funded") {
-        filtered = filtered.filter(
-          (c) => c.currentFunding >= c.fundingGoal * 0.8 && c.currentFunding < c.fundingGoal
-        );
+// Dummy data (replace with backend/api)
+export const CASES = [
+  {
+    id: "CASE-1001",
+    beneficiary: "Ramesh Kumar",
+    age: 42,
+    photoUrl: "https://randomuser.me/api/portraits/men/22.jpg",
+    status: "In Progress",
+    location: { address: "Connaught Place, Delhi" },
+    needs: ["Medical", "Shelter"],
+    desc: "Man with respiratory issues, needs urgent medical attention and shelter.",
+    fundingGoal: 5000,
+    currentFunding: 1500,
+    registeredBy: "Priya Sharma",
+    contact: "9810001000",
+    voiceTranscript: "Patient described breathing issues and poor living conditions.",
+    volunteer: { name: "Priya Sharma", phone: "9810001000", location: "Connaught Place, Delhi" },
+    ngo: { name: "HelpNGO", staff: "Dr. Michael Chen", staffPhone: "9810002000" },
+    funding: { raised: 1500, goal: 5000, donors: 3, lastUpdate: "2025-10-23" },
+    timeline: [
+      { step: "Case Registered", date: "2025-09-01", actor: "Priya Sharma (Volunteer)", description: "Submitted with proof." },
+      { step: "Verified", date: "2025-09-02", actor: "Dr. Michael Chen (NGO)", description: "Verified by NGO staff." },
+      { step: "Funding Goal Reached", date: "2025-09-05", actor: "Raj Patel & 2 Donors", description: "Funding achieved through donations.", amount: "₹5000" }
+    ]
+  },
+  {
+    id: "CASE-1002",
+    beneficiary: "Sita Devi",
+    age: 35,
+    photoUrl: "https://randomuser.me/api/portraits/women/39.jpg",
+    status: "Funded",
+    location: { address: "Lajpat Nagar, Delhi" },
+    needs: ["Food", "Shelter"],
+    desc: "Single mother with two children, lost home in floods.",
+    fundingGoal: 8000,
+    currentFunding: 8000,
+    registeredBy: "Ankit Soni",
+    contact: "9810033333",
+    voiceTranscript: "Family displaced after floods.",
+    volunteer: { name: "Ankit Soni", phone: "9810033333", location: "Lajpat Nagar, Delhi" },
+    ngo: { name: "ReliefTrust", staff: "Sapna Malhotra", staffPhone: "9810008000" },
+    funding: { raised: 8000, goal: 8000, donors: 5, lastUpdate: "2025-10-23" },
+    timeline: [
+      { step: "Case Registered", date: "2025-09-01", actor: "Ankit Soni (Volunteer)", description: "Case registered, proof uploaded." },
+      { step: "Verified", date: "2025-09-03", actor: "Sapna Malhotra (NGO)", description: "NGO staff review complete." },
+      { step: "Funding Goal Reached", date: "2025-09-08", actor: "Meena & 4 Donors", description: "Fully funded.", amount: "₹8000" }
+    ]
+  },
+  {
+    id: "CASE-1003",
+    beneficiary: "Amit Sharma",
+    age: 28,
+    photoUrl: "https://randomuser.me/api/portraits/men/70.jpg",
+    status: "Completed",
+    location: { address: "Noida Sector 62" },
+    needs: ["Education", "Food"],
+    desc: "Young student needs help for tuition and meals.",
+    fundingGoal: 3000,
+    currentFunding: 3000,
+    registeredBy: "Deepak Meena",
+    contact: "9798881000",
+    voiceTranscript: "Support needed for studies and food.",
+    volunteer: { name: "Deepak Meena", phone: "9798881000", location: "Noida Sector 62" },
+    ngo: { name: "YouthCare", staff: "S. Iyer", staffPhone: "9810088996" },
+    funding: { raised: 3000, goal: 3000, donors: 2, lastUpdate: "2025-10-23" },
+    timeline: [
+      { step: "Case Registered", date: "2025-09-03", actor: "Deepak Meena (Volunteer)", description: "Docs uploaded, site checked." },
+      { step: "Verified", date: "2025-09-05", actor: "S. Iyer (NGO)", description: "Records checked, approved." },
+      { step: "Funding Goal Reached", date: "2025-09-11", actor: "Donors", description: "Goal reached for fees.", amount: "₹3000" },
+      { step: "Voucher Issued", date: "2025-10-01", description: "Tuition voucher sent.", proof: true, proofUrl: "#" },
+      { step: "Voucher Redeemed", date: "2025-10-21", actor: "StudentAid Foundation", description: "Voucher redeemed, receipt attached.", proof: true, proofUrl: "#" }
+    ],
+    service: {
+      provider: {
+        name: "StudentAid Foundation",
+        contact: "info@studentaid.org",
+        address: "Noida Sector 62",
+        proofs: { photo: true, receipt: true }
+      },
+      voucher: {
+        id: "VCH-0019",
+        value: 1200,
+        redeemed: true,
+        date: "2025-10-21"
       }
     }
-
-    setFilteredCases(filtered);
-  };
-
-  const getUrgencyColor = (urgency) => {
-    switch (urgency) {
-      case "critical":
-        return "bg-danger text-white";
-      case "high":
-        return "bg-warning text-dark";
-      case "medium":
-        return "bg-info text-dark";
-      case "low":
-        return "bg-success text-white";
-      default:
-        return "bg-secondary text-white";
-    }
-  };
-
-  const getFundingPercentage = (current, goal) => {
-    return Math.min((current / goal) * 100, 100);
-  };
-
-  const handleDonate = (caseItem) => {
-    setSelectedCase(caseItem);
-    setShowDonationModal(true);
-  };
-
-  const handleDonationComplete = (amount) => {
-    if (selectedCase) {
-      const updatedCases = cases.map((c) =>
-        c.id === selectedCase.id
-          ? { ...c, currentFunding: c.currentFunding + amount, donorCount: c.donorCount + 1 }
-          : c
-      );
-      setCases(updatedCases);
-
-      const existingDonations = JSON.parse(localStorage.getItem("userDonations") || "[]");
-      const newDonation = {
-        id: Math.random().toString(36).substr(2, 9),
-        caseId: selectedCase.id,
-        caseName: selectedCase.beneficiaryName,
-        amount,
-        donorId: JSON.parse(localStorage.getItem("user") || "{}").id,
-        createdAt: new Date().toISOString(),
-        status: "completed",
-      };
-      localStorage.setItem("userDonations", JSON.stringify([...existingDonations, newDonation]));
-    }
-    setShowDonationModal(false);
-    setSelectedCase(null);
-  };
-
-  if (cases.length === 0) {
-    return (
-      <div className="text-center py-5">
-        <div className="bg-light rounded-circle p-4 d-inline-flex justify-content-center mb-3">
-          <FaHeart size={30} className="text-muted" />
-        </div>
-        <h5>No verified cases available</h5>
-        <p className="text-muted">Check back later for new cases that need your help.</p>
-      </div>
-    );
   }
+];
+
+// Dummy schemes for filter
+const SCHEMES = [
+  { id: "SCH-1", name: "Flood Relief 2025" },
+  { id: "SCH-2", name: "Education Drive" }
+];
+
+const urgencyColors = {
+  high: "#ff8911",
+  medium: "#ffd740",
+  critical: "#ff2e3b"
+};
+
+export default function VerifiedCasesList() {
+  const [search, setSearch] = useState("");
+  const [urgency, setUrgency] = useState("");
+  const [type, setType] = useState("");
+  const [status, setStatus] = useState("");
+  const [scheme, setScheme] = useState("");
+
+  let filtered = CASES.filter(c =>
+    (!search || (c.beneficiary.toLowerCase().includes(search.toLowerCase()) || c.desc.toLowerCase().includes(search.toLowerCase())))
+    && (!urgency || (c.urgency && c.urgency === urgency))
+    && (!type || c.needs.map(x => x.toLowerCase()).includes(type.toLowerCase()))
+    && (!status || c.status.toLowerCase() === status.toLowerCase())
+  );
 
   return (
-    <div className="container py-4">
+    <div style={{ padding: 10, borderRadius: 16, background: "#fff", boxShadow: "0 0 0.6rem #f1f2f3", marginBottom: 24 }}>
+      <h4 style={{ fontWeight: 700, fontSize: 20, marginBottom: 12 }}>Verified Cases</h4>
+      <div style={{ color: "#666", marginBottom: 24 }}>Browse and donate to verified cases that need your help</div>
       {/* Filters */}
-      <div className="row g-3 mb-4 p-3 bg-light rounded">
-        <div className="col-md-3">
-          <label className="form-label">Search Cases</label>
+      <div className="row g-3 mb-4">
+        <div className="col-md-4">
           <input
-            type="text"
             className="form-control"
             placeholder="Search by name, description..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <div className="col-md-3">
-          <label className="form-label">Urgency Level</label>
-          <select
-            className="form-select"
-            value={filters.urgency}
-            onChange={(e) => setFilters({ ...filters, urgency: e.target.value })}
-          >
-            <option value="all">All Levels</option>
-            <option value="critical">Critical</option>
+        <div className="col-md-2">
+          <Form.Select value={urgency} onChange={(e) => setUrgency(e.target.value)}>
+            <option value="">All Urgency Levels</option>
             <option value="high">High</option>
+            <option value="critical">Critical</option>
             <option value="medium">Medium</option>
-            <option value="low">Low</option>
-          </select>
+          </Form.Select>
         </div>
-        <div className="col-md-3">
-          <label className="form-label">Assistance Type</label>
-          <select
-            className="form-select"
-            value={filters.assistanceType}
-            onChange={(e) => setFilters({ ...filters, assistanceType: e.target.value })}
-          >
-            <option value="all">All Types</option>
+        <div className="col-md-2">
+          <Form.Select value={type} onChange={(e) => setType(e.target.value)}>
+            <option value="">All Types</option>
             <option value="Medical">Medical</option>
-            <option value="Food">Food</option>
             <option value="Shelter">Shelter</option>
+            <option value="Food">Food</option>
             <option value="Education">Education</option>
-            <option value="Emergency">Emergency</option>
-          </select>
+          </Form.Select>
         </div>
-        <div className="col-md-3">
-          <label className="form-label">Funding Status</label>
-          <select
-            className="form-select"
-            value={filters.fundingStatus}
-            onChange={(e) => setFilters({ ...filters, fundingStatus: e.target.value })}
-          >
-            <option value="all">All Cases</option>
-            <option value="urgent">Urgent (&lt;30%)</option>
-            <option value="partial">Partially Funded</option>
-            <option value="nearly-funded">Nearly Funded (80%+)</option>
-          </select>
+        <div className="col-md-2">
+          <Form.Select value={status} onChange={(e) => setStatus(e.target.value)}>
+            <option value="">All Status</option>
+            <option>Funded</option>
+            <option>In Progress</option>
+            <option>Completed</option>
+          </Form.Select>
+        </div>
+        <div className="col-md-2">
+          <Form.Select value={scheme} onChange={(e) => setScheme(e.target.value)}>
+            <option value="">All Schemes</option>
+            {SCHEMES.map((s) => (
+              <option key={s.id}>{s.name}</option>
+            ))}
+          </Form.Select>
         </div>
       </div>
-
-      {/* Cards Grid */}
+      {/* Case Cards */}
       <div className="row g-4">
-        {filteredCases.map((caseItem) => {
-          const fundingPercentage = getFundingPercentage(caseItem.currentFunding, caseItem.fundingGoal);
-          const remainingAmount = caseItem.fundingGoal - caseItem.currentFunding;
-
-          return (
-            <div className="col-md-6 col-lg-4" key={caseItem.id}>
-              <div className="card h-100 shadow-sm">
-                <div className="card-body">
-                  <div className="d-flex justify-content-between align-items-center mb-2">
-                    <h5 className="card-title">{caseItem.id}</h5>
-                    <span className={`badge ${getUrgencyColor(caseItem.urgencyLevel)}`}>
-                      {caseItem.urgencyLevel}
-                    </span>
-                  </div>
-
-                  <p className="text-muted mb-2">
-                    <FaUser className="me-1" />
-                    {caseItem.beneficiaryName} ({caseItem.age}y)
-                  </p>
-
-                  <div className="mb-2">
-                    {caseItem.assistanceType.map((type, i) => (
-                      <span key={i} className="badge bg-secondary me-1">
-                        {type}
-                      </span>
-                    ))}
-                  </div>
-
-                  <p className="text-muted small">{caseItem.description}</p>
-
-                  <p className="text-muted small">
-                    <FaMapMarkerAlt className="me-1" />
-                    {caseItem.address}
-                  </p>
-
-                  <div className="my-3">
-                    <div className="d-flex justify-content-between small">
-                      <span>Funding Progress</span>
-                      <span>{fundingPercentage.toFixed(0)}%</span>
-                    </div>
-                    <div className="progress" style={{ height: "6px" }}>
-                      <div
-                        className="progress-bar bg-success"
-                        style={{ width: `${fundingPercentage}%` }}
-                      ></div>
-                    </div>
-                    <div className="d-flex justify-content-between small mt-1">
-                      <span>${caseItem.currentFunding.toLocaleString()} raised</span>
-                      <span>${caseItem.fundingGoal.toLocaleString()} goal</span>
-                    </div>
-                  </div>
-
-                  <div className="d-flex justify-content-between text-muted small mb-3">
-                    <span>
-                      <FaHeart className="me-1 text-danger" />
-                      {caseItem.donorCount} donors
-                    </span>
-                    <span>
-                      <FaClock className="me-1" />
-                      {new Date(caseItem.createdAt).toLocaleDateString()}
-                    </span>
-                  </div>
-
-                  <button
-                    className={`btn w-100 ${remainingAmount <= 0 ? "btn-secondary" : "btn-primary"}`}
-                    onClick={() => handleDonate(caseItem)}
-                    disabled={remainingAmount <= 0}
-                  >
-                    <FaHeart className="me-2" />
-                    {remainingAmount <= 0 ? "Fully Funded" : `Donate $${Math.min(remainingAmount, 50)}`}
-                  </button>
+        {filtered.map((c) => (
+          <div className="col-md-4" key={c.id}>
+            <div
+              style={{
+                border: "1.5px solid #e7eaea",
+                borderRadius: 16,
+                background: "#fcfefd",
+                boxShadow: "0 2px 12px #f2f2f2",
+                padding: "28px 24px 18px 24px",
+                position: "relative",
+              }}
+            >
+              <div className="d-flex align-items-center justify-content-between mb-1">
+                <span style={{ fontWeight: 700, fontSize: 21 }}> {c.id} </span>
+                <span
+                  style={{
+                    fontWeight: 600,
+                    fontSize: 14,
+                    padding: "5px 14px",
+                    background: urgencyColors[c.urgency],
+                    color: "#fff",
+                    borderRadius: 7,
+                    textTransform: "capitalize",
+                  }}
+                >
+                  {c.urgency}
+                </span>
+              </div>
+              <div style={{ color: "#445", fontWeight: 500, marginBottom: 0 }}>
+                <span role="img" aria-label="">
+                  👤
+                </span>{" "}
+                {c.beneficiary} ({c.age}y)
+              </div>
+              {/* Volunteer details */}
+              <div className="mb-2" style={{ fontSize: 13, color: "#7fab9b" }}>
+                <span role="img" aria-label="">
+                  🧑‍🤝‍🧑
+                </span>{" "}
+                {c.volunteer.name} | {c.volunteer.phone} | {c.volunteer.location}
+              </div>
+              {/* NGO staff */}
+              <div className="mb-2" style={{ fontSize: 13, color: "#7fab9b" }}>
+                <span role="img" aria-label="">
+                  🏥
+                </span>{" "}
+                {c.ngo.name} — {c.ngo.staff} ({c.ngo.staffPhone})
+              </div>
+              <div className="mb-2">
+                {c.needs.map((tag) => (
+                  <span className="badge bg-success me-2" key={tag}>
+                    {tag}
+                  </span>
+                ))}
+              </div>
+              <div style={{ color: "#353535", fontWeight: 400, fontSize: 15, minHeight: 50 }}>{c.desc}</div>
+              <div className="mt-1 text-muted" style={{ fontSize: 13 }}>
+                <span role="img" aria-label="">
+                  📍
+                </span>{" "}
+                {c.location.address}
+              </div>
+              {/* Funding progress */}
+              <div style={{ marginTop: 20, marginBottom: 13 }}>
+                <div style={{ fontWeight: 500, fontSize: 14, color: "#545" }}>Funding Progress</div>
+                <ProgressBar
+                  now={Math.round((c.funding.raised / c.funding.goal) * 100)}
+                  label={`${Math.round((c.funding.raised / c.funding.goal) * 100)}%`}
+                  style={{ height: 8, background: "#eaefee" }}
+                  variant="success"
+                />
+                <div className="d-flex justify-content-between mt-1" style={{ fontSize: 15 }}>
+                  <span>
+                    <b>${c.funding.raised.toLocaleString()}</b> raised
+                  </span>
+                  <span>
+                    <b>${c.funding.goal.toLocaleString()}</b> goal
+                  </span>
+                </div>
+                <div className="d-flex justify-content-between mt-1" style={{ color: "#778", fontSize: 13 }}>
+                  <span>
+                    {" "}
+                    <span role="img" aria-label="">
+                      🤝
+                    </span>{" "}
+                    {c.funding.donors} donors{" "}
+                  </span>
+                  <span>
+                    {" "}
+                    <span role="img" aria-label="">
+                      🕒
+                    </span>{" "}
+                    {c.funding.lastUpdate}{" "}
+                  </span>
                 </div>
               </div>
+              {/* Service provider and proof (if at last stage) */}
+              {c.service && (
+                <div className="mt-1 mb-2">
+                  <div style={{ fontWeight: 500, color: "#1388c9", fontSize: 15 }}>
+                    Redeemed by: {c.service.provider.name} – {c.service.provider.address}
+                  </div>
+                  <div style={{ fontSize: 13, color: "#288c12" }}>Contact: {c.service.provider.contact}</div>
+                  <div className="d-flex gap-2 mt-1">
+                    {c.service.provider.proofs.photo && <Badge bg="info">Photo Proof</Badge>}
+                    {c.service.provider.proofs.receipt && <Badge bg="info">Receipt</Badge>}
+                  </div>
+                </div>
+              )}
+              <Button
+                className="w-100 mt-3"
+                variant={c.funding.raised < c.funding.goal ? "success" : "outline-success"}
+                disabled={c.funding.raised >= c.funding.goal}
+                style={{ height: 45, fontSize: 18, fontWeight: 600 }}
+              >
+                {c.funding.raised < c.funding.goal ? (
+                  <>
+                    {" "}
+                    <span role="img" aria-label="donate">
+                      🤍
+                    </span>{" "}
+                    Donate $50{" "}
+                  </>
+                ) : (
+                  "Fully Funded"
+                )}
+              </Button>
             </div>
-          );
-        })}
-      </div>
-
-      {filteredCases.length === 0 && (
-        <div className="text-center py-5">
-          <div className="bg-light rounded-circle p-4 d-inline-flex justify-content-center mb-3">
-            <FaFilter size={30} className="text-muted" />
           </div>
-          <h5>No cases match your filters</h5>
-          <p className="text-muted">Try adjusting your search criteria to see more cases.</p>
-        </div>
-      )}
+        ))}
+      </div>
     </div>
   );
 }

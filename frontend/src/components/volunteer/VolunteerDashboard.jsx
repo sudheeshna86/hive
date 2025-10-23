@@ -3,6 +3,7 @@ import { Plus, LogOut, Bell, Users, Star, Mail } from "lucide-react";
 import CaseRegistrationForm from "./CaseRegistrationForm";
 import VolunteerStats from "./VolunteerStats";
 import VolunteerTracking from "./VolunteerTracking";
+import VolunteerServiceProviding from "./VolunteerServiceProviding";
 
 // Dummy data for illustration
 const myCases = [
@@ -239,7 +240,21 @@ export default function VolunteerDashboard({ user }) {
               My Cases
             </button>
           </li>
+             <li className="nav-item">
+            <button
+              className={`nav-link rounded-top ${
+                activeTab === "volunteerServiceProviding"
+                  ? "active bg-success text-white fw-semibold border-0"
+                  : "bg-white border-success border"
+              } `}
+              onClick={() => setActiveTab("volunteerServiceProviding")}
+              style={{ minWidth: 120 }}
+            >
+              ServiceProviding Cases
+            </button>
+          </li>
         </ul>
+
 
         {activeTab === "overview" && (
           <div>
@@ -440,6 +455,11 @@ export default function VolunteerDashboard({ user }) {
 
         {activeTab === "register" && <CaseRegistrationForm />}
         {activeTab === "tracking" && <VolunteerTracking myCases={myCases} />}
+        {activeTab === "volunteerServiceProviding" && (
+        
+<VolunteerServiceProviding myCases={myCases} />
+
+        )}
       </div>
 
       {/* Proof Modal */}
