@@ -7,7 +7,39 @@ export default function DonationHistory() {
   const [selectedDonation, setSelectedDonation] = useState(null);
 
   useEffect(() => {
-    const storedDonations = JSON.parse(localStorage.getItem("userDonations") || "[]");
+    let storedDonations = JSON.parse(localStorage.getItem("userDonations") || "[]");
+
+    // ✅ Add dummy donations if none exist
+    if (storedDonations.length === 0) {
+      storedDonations = [
+        {
+          id: "D001",
+          caseId: "CASE_001",
+          caseName: "Ravi Kumar — Medical Aid",
+          amount: 150,
+          status: "completed",
+          createdAt: "2025-10-10T14:22:00",
+        },
+        {
+          id: "D002",
+          caseId: "CASE_004",
+          caseName: "Asha Devi — Child Education",
+          amount: 75,
+          status: "processing",
+          createdAt: "2025-10-15T09:45:00",
+        },
+        {
+          id: "D003",
+          caseId: "CASE_005",
+          caseName: "Santosh — Housing Support",
+          amount: 300,
+          status: "pending",
+          createdAt: "2025-10-20T16:05:00",
+        },
+      ];
+      localStorage.setItem("userDonations", JSON.stringify(storedDonations));
+    }
+
     setDonations(
       storedDonations.sort(
         (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -34,13 +66,15 @@ export default function DonationHistory() {
       caseId: donation.caseId,
       beneficiary: donation.caseName,
       amount: donation.amount,
-      serviceFee: donation.amount * 0.09,
-      netAmount: donation.amount * 0.91,
+      serviceFee: (donation.amount * 0.09).toFixed(2),
+      netAmount: (donation.amount * 0.91).toFixed(2),
       date: donation.createdAt,
       status: donation.status,
     };
 
-    const blob = new Blob([JSON.stringify(receiptData, null, 2)], { type: "application/json" });
+    const blob = new Blob([JSON.stringify(receiptData, null, 2)], {
+      type: "application/json",
+    });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -54,17 +88,24 @@ export default function DonationHistory() {
   if (donations.length === 0) {
     return (
       <div className="text-center py-5">
-        <div className="bg-light rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style={{ width: "70px", height: "70px" }}>
+        <div
+          className="bg-light rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3"
+          style={{ width: "70px", height: "70px" }}
+        >
           <DollarSign size={30} className="text-secondary" />
         </div>
         <h5>No donations yet</h5>
-        <p className="text-muted">Your donation history will appear here once you make your first donation.</p>
+        <p className="text-muted">
+          Your donation history will appear here once you make your first donation.
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="container py-3">
+    <div className="container py-4">
+      <h4 className="fw-bold text-success mb-4">Your Donation History</h4>
+
       {donations.map((donation) => (
         <div key={donation.id} className="card mb-3 shadow-sm border-0">
           <div className="card-header bg-white d-flex justify-content-between align-items-center">
@@ -73,7 +114,8 @@ export default function DonationHistory() {
               <div className="text-muted small d-flex gap-3">
                 <span>To: {donation.caseName}</span>
                 <span className="d-flex align-items-center gap-1">
-                  <Calendar size={14} /> {new Date(donation.createdAt).toLocaleDateString()}
+                  <Calendar size={14} />{" "}
+                  {new Date(donation.createdAt).toLocaleDateString()}
                 </span>
               </div>
             </div>
@@ -92,7 +134,9 @@ export default function DonationHistory() {
 
           <div className="card-body d-flex justify-content-between align-items-center">
             <div>
-              <h4 className="text-primary mb-1">${donation.amount.toLocaleString()}</h4>
+              <h4 className="text-primary mb-1">
+                ${donation.amount.toLocaleString()}
+              </h4>
               <div className="text-muted small">
                 Net amount: ${(donation.amount * 0.91).toFixed(2)} • Service fee: $
                 {(donation.amount * 0.09).toFixed(2)}
@@ -108,9 +152,12 @@ export default function DonationHistory() {
         </div>
       ))}
 
-      {/* Modal */}
+      {/* Donation Details Modal */}
       {selectedDonation && (
-        <div className="modal fade show d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
+        <div
+          className="modal fade show d-block"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+        >
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content border-0 shadow-lg">
               <div className="modal-header">
@@ -122,7 +169,9 @@ export default function DonationHistory() {
                 ></button>
               </div>
               <div className="modal-body">
-                <p className="text-muted">Transaction #{selectedDonation.id}</p>
+                <p className="text-muted small">
+                  Transaction #{selectedDonation.id}
+                </p>
 
                 <div className="row mb-3">
                   <div className="col-6">
@@ -134,14 +183,17 @@ export default function DonationHistory() {
                     <p>{selectedDonation.caseName}</p>
                   </div>
                   <div className="col-6">
-                    <small className="text-muted">Donation Amount</small>
-                    <p className="fw-bold text-primary">${selectedDonation.amount.toLocaleString()}</p>
+                    <small className="text-muted">Amount</small>
+                    <p className="fw-bold text-primary">
+                      ${selectedDonation.amount.toLocaleString()}
+                    </p>
                   </div>
                   <div className="col-6">
                     <small className="text-muted">Status</small>
                     <div>
                       <span className={getStatusClass(selectedDonation.status)}>
-                        {selectedDonation.status}
+                        {selectedDonation.status.charAt(0).toUpperCase() +
+                          selectedDonation.status.slice(1)}
                       </span>
                     </div>
                   </div>
@@ -149,7 +201,7 @@ export default function DonationHistory() {
 
                 <div className="bg-light p-3 rounded mb-3">
                   <div className="d-flex justify-content-between small mb-1">
-                    <span>Donation Amount:</span>
+                    <span>Donation:</span>
                     <span>${selectedDonation.amount.toFixed(2)}</span>
                   </div>
                   <div className="d-flex justify-content-between small mb-1">
@@ -157,7 +209,7 @@ export default function DonationHistory() {
                     <span>-${(selectedDonation.amount * 0.09).toFixed(2)}</span>
                   </div>
                   <div className="d-flex justify-content-between small border-top pt-2 fw-bold">
-                    <span>Net Amount to Beneficiary:</span>
+                    <span>Net to Beneficiary:</span>
                     <span>${(selectedDonation.amount * 0.91).toFixed(2)}</span>
                   </div>
                 </div>

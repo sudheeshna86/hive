@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { FaEye, FaDownload, FaCalendar, FaDollarSign, FaCheckCircle } from "react-icons/fa";
+import { createPortal } from "react-dom";
 
 export function ServiceHistory() {
   const [serviceRecords, setServiceRecords] = useState([]);
@@ -17,7 +18,8 @@ export function ServiceHistory() {
         completedAt: "2024-01-15T14:30:00Z",
         status: "completed",
         paymentStatus: "paid",
-        serviceNotes: "General health checkup completed. Patient in good health with minor concerns addressed.",
+        serviceNotes:
+          "General health checkup completed. Patient in good health with minor concerns addressed.",
       },
       {
         id: "SRV-002",
@@ -29,7 +31,8 @@ export function ServiceHistory() {
         completedAt: "2024-01-16T16:45:00Z",
         status: "completed",
         paymentStatus: "paid",
-        serviceNotes: "Prescribed medication dispensed for chronic condition management. Patient counseled on usage.",
+        serviceNotes:
+          "Prescribed medication dispensed for chronic condition management. Patient counseled on usage.",
       },
       {
         id: "SRV-003",
@@ -41,7 +44,8 @@ export function ServiceHistory() {
         completedAt: "2024-01-14T20:15:00Z",
         status: "completed",
         paymentStatus: "pending",
-        serviceNotes: "Emergency treatment provided for acute condition. Patient stabilized and discharged.",
+        serviceNotes:
+          "Emergency treatment provided for acute condition. Patient stabilized and discharged.",
       },
     ];
     setServiceRecords(mockRecords);
@@ -91,11 +95,16 @@ export function ServiceHistory() {
   if (serviceRecords.length === 0) {
     return (
       <div className="text-center py-5">
-        <div className="bg-light rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style={{ width: 64, height: 64 }}>
+        <div
+          className="bg-light rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3"
+          style={{ width: 64, height: 64 }}
+        >
           <FaCheckCircle size={32} className="text-muted" />
         </div>
         <h5>No service history</h5>
-        <p className="text-muted">Your completed services will appear here once you start redeeming vouchers.</p>
+        <p className="text-muted">
+          Your completed services will appear here once you start redeeming vouchers.
+        </p>
       </div>
     );
   }
@@ -116,9 +125,20 @@ export function ServiceHistory() {
               </small>
             </div>
             <div className="d-flex gap-2 flex-wrap mt-2 mt-sm-0">
-              <span className={`badge bg-${getStatusColor(record.status)} text-capitalize`}>{record.status}</span>
-              <span className={`badge bg-${getPaymentStatusColor(record.paymentStatus)} text-capitalize`}>{record.paymentStatus}</span>
-              <button className="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1" onClick={() => setSelectedRecord(record)}>
+              <span
+                className={`badge bg-${getStatusColor(record.status)} text-capitalize`}
+              >
+                {record.status}
+              </span>
+              <span
+                className={`badge bg-${getPaymentStatusColor(record.paymentStatus)} text-capitalize`}
+              >
+                {record.paymentStatus}
+              </span>
+              <button
+                className="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1"
+                onClick={() => setSelectedRecord(record)}
+              >
                 <FaEye size={14} /> View
               </button>
             </div>
@@ -138,8 +158,13 @@ export function ServiceHistory() {
             </div>
             <p className="text-muted mt-2">{record.serviceNotes}</p>
             <div className="d-flex justify-content-between align-items-center border-top pt-2 mt-2">
-              <small className="text-muted">Completed: {new Date(record.completedAt).toLocaleString()}</small>
-              <button className="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1" onClick={() => downloadServiceReport(record)}>
+              <small className="text-muted">
+                Completed: {new Date(record.completedAt).toLocaleString()}
+              </small>
+              <button
+                className="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1"
+                onClick={() => downloadServiceReport(record)}
+              >
                 <FaDownload /> Report
               </button>
             </div>
@@ -148,63 +173,95 @@ export function ServiceHistory() {
       ))}
 
       {/* Modal */}
-      {selectedRecord && (
-        <div className="modal show d-block" tabIndex="-1" role="dialog">
-          <div className="modal-dialog modal-lg modal-dialog-scrollable">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Service Details</h5>
-                <button type="button" className="btn-close" onClick={() => setSelectedRecord(null)}></button>
-              </div>
-              <div className="modal-body">
-                <div className="row g-3">
-                  <div className="col-6">
-                    <small className="fw-medium">Voucher ID</small>
-                    <p>{selectedRecord.voucherId}</p>
+      {selectedRecord &&
+        createPortal(
+          <>
+            {/* Backdrop */}
+            <div
+              style={{
+                position: "fixed",
+                top: 0,
+                left: 0,
+                width: "100vw",
+                height: "100vh",
+                backgroundColor: "rgba(0,0,0,0.5)",
+                zIndex: 1040,
+              }}
+              onClick={() => setSelectedRecord(null)}
+            ></div>
+
+            {/* Modal */}
+            <div
+              style={{
+                position: "fixed",
+                top: 0,
+                left: 0,
+                width: "100vw",
+                height: "100vh",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                zIndex: 1050,
+                overflowY: "auto",
+                padding: "1rem",
+              }}
+            >
+              <div
+                className="modal-dialog modal-lg"
+                style={{
+                  maxWidth: "800px",
+                  width: "100%",
+                  margin: "auto",
+                }}
+              >
+                <div
+                  className="modal-content shadow-lg rounded"
+                  style={{ backgroundColor: "white", padding: "1.5rem" }}
+                >
+                  <div className="modal-header">
+                    <h5 className="modal-title">Service Details</h5>
+                    <button className="btn-close" onClick={() => setSelectedRecord(null)}></button>
                   </div>
-                  <div className="col-6">
-                    <small className="fw-medium">Case ID</small>
-                    <p>{selectedRecord.caseId}</p>
-                  </div>
-                  <div className="col-6">
-                    <small className="fw-medium">Beneficiary</small>
-                    <p>{selectedRecord.beneficiaryName}</p>
-                  </div>
-                  <div className="col-6">
-                    <small className="fw-medium">Service Type</small>
-                    <p>{selectedRecord.serviceType}</p>
-                  </div>
-                  <div className="col-6">
-                    <small className="fw-medium">Service Fee</small>
-                    <p className="fw-bold">${selectedRecord.amount}</p>
-                  </div>
-                  <div className="col-6">
-                    <small className="fw-medium">Status</small>
-                    <span className={`badge bg-${getStatusColor(selectedRecord.status)} text-capitalize`}>{selectedRecord.status}</span>
-                  </div>
-                  <div className="col-6">
-                    <small className="fw-medium">Payment Status</small>
-                    <span className={`badge bg-${getPaymentStatusColor(selectedRecord.paymentStatus)} text-capitalize`}>{selectedRecord.paymentStatus}</span>
-                  </div>
-                  <div className="col-6">
-                    <small className="fw-medium">Completed Date</small>
-                    <p>{new Date(selectedRecord.completedAt).toLocaleString()}</p>
+                  <div className="modal-body">
+                    <div className="row g-3">
+                      <div className="col-6">
+                        <strong>Voucher ID:</strong> {selectedRecord.voucherId}
+                      </div>
+                      <div className="col-6">
+                        <strong>Case ID:</strong> {selectedRecord.caseId}
+                      </div>
+                      <div className="col-6">
+                        <strong>Beneficiary:</strong> {selectedRecord.beneficiaryName}
+                      </div>
+                      <div className="col-6">
+                        <strong>Service Type:</strong> {selectedRecord.serviceType}
+                      </div>
+                      <div className="col-6">
+                        <strong>Service Fee:</strong> ${selectedRecord.amount}
+                      </div>
+                      <div className="col-6">
+                        <strong>Status:</strong> {selectedRecord.status}
+                      </div>
+                      <div className="col-6">
+                        <strong>Payment Status:</strong> {selectedRecord.paymentStatus}
+                      </div>
+                      <div className="col-6">
+                        <strong>Completed:</strong>{" "}
+                        {new Date(selectedRecord.completedAt).toLocaleString()}
+                      </div>
+                    </div>
+                    <hr />
+                    <div>
+                      <strong>Service Notes:</strong>
+                      <p className="bg-light p-3 rounded">{selectedRecord.serviceNotes}</p>
+                    </div>
                   </div>
                 </div>
-                <div className="mt-3">
-                  <small className="fw-medium">Service Notes</small>
-                  <p className="bg-light p-3 rounded">{selectedRecord.serviceNotes}</p>
-                </div>
-              </div>
-              <div className="modal-footer">
-                <button className="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center gap-2" onClick={() => downloadServiceReport(selectedRecord)}>
-                  <FaDownload /> Download Service Report
-                </button>
               </div>
             </div>
-          </div>
-        </div>
-      )}
+          </>,
+          document.body
+        )}
     </div>
   );
 }

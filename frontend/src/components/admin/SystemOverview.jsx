@@ -22,7 +22,6 @@ const systemMetrics = {
   ],
 };
 
-// Helper functions
 const getStatusVariant = (status) => {
   switch (status) {
     case "healthy":
@@ -40,7 +39,7 @@ export default function SystemOverview() {
   return (
     <Row className="g-4">
       {/* System Health */}
-      <Col lg={6}>
+      <Col lg={6} md={12}>
         <Card>
           <Card.Header className="d-flex align-items-center gap-2">
             <Server size={20} className="text-success" />
@@ -50,14 +49,14 @@ export default function SystemOverview() {
             {systemMetrics.serverStatus.map((server, index) => (
               <div
                 key={index}
-                className="d-flex justify-content-between align-items-center mb-3 p-3 rounded bg-light"
+                className="d-flex justify-content-between align-items-center mb-3 p-4 rounded bg-light"
               >
                 <div className="d-flex align-items-center gap-3">
                   <span
                     className={`rounded-circle d-inline-block`}
                     style={{
-                      width: "10px",
-                      height: "10px",
+                      width: "12px",
+                      height: "12px",
                       backgroundColor:
                         server.status === "healthy"
                           ? "green"
@@ -67,15 +66,17 @@ export default function SystemOverview() {
                     }}
                   />
                   <div>
-                    <p className="mb-0 fw-medium">{server.name}</p>
+                    <p className="mb-1 fw-medium">{server.name}</p>
                     <small className="text-muted">Uptime: {server.uptime}</small>
                   </div>
                 </div>
-                <div className="text-end">
-                  <Badge bg={getStatusVariant(server.status)}>{server.status}</Badge>
-                  <div className="mt-2" style={{ width: "120px" }}>
-                    <ProgressBar now={server.load} label={`${server.load}%`} />
-                  </div>
+                <div style={{ width: "130px" }}>
+                  <ProgressBar
+                    now={server.load}
+                    label={`${server.load}%`}
+                    variant={getStatusVariant(server.status)}
+                    style={{ height: "18px" }}
+                  />
                 </div>
               </div>
             ))}
@@ -84,7 +85,7 @@ export default function SystemOverview() {
       </Col>
 
       {/* Regional Overview */}
-      <Col lg={6}>
+      <Col lg={6} md={12}>
         <Card>
           <Card.Header className="d-flex align-items-center gap-2">
             <Globe size={20} className="text-success" />
@@ -94,14 +95,14 @@ export default function SystemOverview() {
             {systemMetrics.regionalStats.map((region, index) => (
               <div
                 key={index}
-                className="d-flex justify-content-between align-items-center mb-3 p-3 rounded bg-light"
+                className="d-flex justify-content-between align-items-center mb-3 p-4 rounded bg-light"
               >
                 <div className="d-flex align-items-center gap-3">
                   <span
                     className="rounded-circle d-inline-block"
                     style={{
-                      width: "10px",
-                      height: "10px",
+                      width: "12px",
+                      height: "12px",
                       backgroundColor: region.active ? "green" : "gray",
                     }}
                   />
@@ -112,9 +113,7 @@ export default function SystemOverview() {
                     </small>
                   </div>
                 </div>
-                <Badge bg={region.active ? "success" : "secondary"}>
-                  {region.active ? "Active" : "Inactive"}
-                </Badge>
+                <Badge bg={region.active ? "success" : "secondary"}>{region.active ? "Active" : "Inactive"}</Badge>
               </div>
             ))}
           </Card.Body>
@@ -122,7 +121,7 @@ export default function SystemOverview() {
       </Col>
 
       {/* Performance Metrics */}
-      <Col lg={6}>
+      <Col lg={6} md={12}>
         <Card>
           <Card.Header className="d-flex align-items-center gap-2">
             <Activity size={20} className="text-success" />
@@ -131,14 +130,16 @@ export default function SystemOverview() {
           <Card.Body>
             <Row>
               {[
-                { label: "Avg Response Time", value: "2.3s", color: "success" },
-                { label: "Uptime", value: "99.9%", color: "primary" },
-                { label: "Daily Active Users", value: "1.2K", color: "purple" },
-                { label: "Data Processed", value: "45GB", color: "warning" },
+                { label: "Avg Response Time", value: "2.3s", color: "#28a745" },
+                { label: "Uptime", value: "99.9%", color: "#0d6efd" },
+                { label: "Daily Active Users", value: "1.2K", color: "#6f42c1" },
+                { label: "Data Processed", value: "45GB", color: "#ffc107" },
               ].map((metric, idx) => (
                 <Col md={6} key={idx} className="mb-3">
-                  <div className={`text-center p-3 rounded`} style={{ backgroundColor: "#f8f9fa" }}>
-                    <div className={`fw-bold`} style={{ color: metric.color }}>{metric.value}</div>
+                  <div className="text-center p-4 rounded bg-light">
+                    <div className="fw-bold" style={{ color: metric.color, fontSize: "1.3rem" }}>
+                      {metric.value}
+                    </div>
                     <small className="text-muted">{metric.label}</small>
                   </div>
                 </Col>
@@ -149,7 +150,7 @@ export default function SystemOverview() {
       </Col>
 
       {/* Security Status */}
-      <Col lg={6}>
+      <Col lg={6} md={12}>
         <Card>
           <Card.Header className="d-flex align-items-center gap-2">
             <Shield size={20} className="text-success" />
@@ -162,29 +163,29 @@ export default function SystemOverview() {
                 title: "SSL Certificate",
                 subtitle: "Valid until Dec 2024",
                 badge: "Active",
-                color: "success",
                 bgColor: "#d4edda",
+                color: "success",
               },
               {
                 icon: <CheckCircle size={20} className="text-success" />,
                 title: "Firewall",
                 subtitle: "All ports secured",
                 badge: "Protected",
-                color: "success",
                 bgColor: "#d4edda",
+                color: "success",
               },
               {
                 icon: <AlertTriangle size={20} className="text-warning" />,
                 title: "Failed Login Attempts",
                 subtitle: "23 attempts in last hour",
                 badge: "Monitoring",
-                color: "warning",
                 bgColor: "#fff3cd",
+                color: "warning",
               },
             ].map((item, idx) => (
               <div
                 key={idx}
-                className="d-flex justify-content-between align-items-center mb-3 p-3 rounded"
+                className="d-flex justify-content-between align-items-center mb-3 p-4 rounded"
                 style={{ backgroundColor: item.bgColor }}
               >
                 <div className="d-flex align-items-center gap-3">

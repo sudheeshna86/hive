@@ -83,9 +83,50 @@ const getStatusVariant = (status) => {
   }
 };
 
+const getBarStyle = (severity) => {
+  switch (severity) {
+    case "high": return { background: "linear-gradient(90deg,#ff395f,#ffad45)", height: 20, borderRadius: 12 };
+    case "medium": return { background: "linear-gradient(90deg,#fff530,#ff9800)", height: 20, borderRadius: 12 };
+    case "low": return { background: "linear-gradient(90deg,#b8d3fc,#93f9b9)", height: 20, borderRadius: 12 };
+    default: return { background: "#e1e5f2", height: 20, borderRadius: 12 };
+  }
+};
+
+const progressOuter = {
+  background: "#f4f7fa",
+  borderRadius: 14,
+  height: 22,
+  border: "1.5px solid #e6eaf1"
+};
+
 export default function FraudDetection() {
   return (
     <div className="container-fluid">
+      <style>{`
+        .fraud-stat-card {
+          background: linear-gradient(91deg,#fafcfe 0,#f0f7fd 100%);
+          border-radius: 15px;
+        }
+        .fraud-alert-card {
+          box-shadow: 0 2px 32px #e1eaf655, 0 1.5px 6px #fafbff;
+          background: linear-gradient(92deg,#fcf9ff 0,#fafdff 83%);
+        }
+        .fraud-alert-header {
+          background: linear-gradient(91deg,#fef6f7 0,#f2fafc 100%);
+          border-radius: 15px 15px 0 0;
+        }
+        .progress-custom .progress-bar {
+          font-weight: 700;
+          font-size: 1.05rem;
+          color: #143a3c;
+          box-shadow: 0 2px 11px #fdedec25;
+        }
+        .progress-custom {
+          background: #f4f7fa;
+          border-radius: 14px !important;
+          height: 22px;
+        }
+      `}</style>
       {/* Fraud Stats */}
       <div className="row g-3 mb-4 text-center">
         {[
@@ -96,7 +137,7 @@ export default function FraudDetection() {
           { label: "Accuracy Rate", value: `${fraudStats.accuracyRate}%`, color: "text-success" },
         ].map((stat, idx) => (
           <div key={idx} className="col-12 col-md-2">
-            <div className="card shadow-sm h-100 border-0 p-3">
+            <div className="card shadow-sm h-100 border-0 p-3 fraud-stat-card">
               <h4 className={`fw-bold ${stat.color}`}>{stat.value}</h4>
               <small className="text-muted">{stat.label}</small>
             </div>
@@ -105,14 +146,14 @@ export default function FraudDetection() {
       </div>
 
       {/* Fraud Alerts */}
-      <div className="card shadow-sm border-0 mb-4">
-        <div className="card-header d-flex align-items-center gap-2">
+      <div className="card shadow-sm border-0 mb-4 fraud-alert-card">
+        <div className="card-header d-flex align-items-center gap-2 fraud-alert-header">
           <AlertTriangle size={20} className="text-danger" />
           <h6 className="mb-0 fw-bold">Fraud Detection Alerts</h6>
         </div>
         <div className="card-body">
           {fraudAlerts.map((alert) => (
-            <div key={alert.id} className={`border rounded mb-4 p-3 bg-light`}>
+            <div key={alert.id} className="border rounded mb-4 p-3 bg-light">
               <div className="d-flex justify-content-between align-items-start mb-3">
                 <div className="d-flex align-items-center gap-3">
                   <AlertTriangle size={20} />
@@ -141,10 +182,18 @@ export default function FraudDetection() {
                       <small className="text-muted d-block">Volunteer: {alert.volunteer2}</small>
                       <small className="text-muted d-block">Location: {alert.location2}</small>
                     </div>
-                    <div className="col-12 mt-2">
+                    <div className="col-12 mt-3 mb-2">
                       <div className="d-flex align-items-center gap-2">
-                        <span>Similarity Score:</span>
-                        <ProgressBar now={alert.similarity} className="flex-grow-1" label={`${alert.similarity}%`} />
+                        <span style={{fontWeight:500, fontSize:'1.01rem', color:'#c34500'}}>Similarity Score:</span>
+                        <div className="flex-grow-1" style={progressOuter}>
+                          <ProgressBar
+                            now={alert.similarity}
+                            label={`${alert.similarity}%`}
+                            style={getBarStyle(alert.severity)}
+                            className="progress-custom"
+                            striped
+                          />
+                        </div>
                       </div>
                     </div>
                   </>

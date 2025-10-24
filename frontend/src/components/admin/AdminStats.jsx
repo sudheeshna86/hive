@@ -1,111 +1,89 @@
-import React from "react";
-import { Users, Heart, Building2, UserCheck, TrendingUp, AlertTriangle, DollarSign, Activity } from "lucide-react";
-import ProgressBar from "react-bootstrap/ProgressBar";
+import React from "react"
+import { Row, Col, Card, ProgressBar } from "react-bootstrap"
+import { Users, Heart, DollarSign, UserCheck, Building2, AlertTriangle, Activity } from "lucide-react"
 
 export default function AdminStats({ data }) {
   const stats = [
     {
       title: "Total Users",
       value: data.totalUsers.toLocaleString(),
-      icon: Users,
-      color: "text-primary",
-      bgColor: "bg-primary bg-opacity-10",
-      change: "+12%",
+      icon: <Users size={18} className="text-blue-400" />,
+      change: "+12% from last month",
       changeType: "positive",
     },
     {
       title: "Active Cases",
       value: data.totalCases.toLocaleString(),
-      icon: Heart,
-      color: "text-danger",
-      bgColor: "bg-danger bg-opacity-10",
-      change: "+8%",
+      icon: <Heart size={18} className="text-red-400" />,
+      change: "+8% from last month",
       changeType: "positive",
     },
     {
       title: "Total Donations",
       value: `₹${(data.totalDonations / 1000).toFixed(0)}K`,
-      icon: DollarSign,
-      color: "text-success",
-      bgColor: "bg-success bg-opacity-10",
-      change: "+23%",
+      icon: <DollarSign size={18} className="text-green-400" />,
+      change: "+23% from last month",
       changeType: "positive",
     },
     {
       title: "Active Vouchers",
       value: data.activeVouchers.toLocaleString(),
-      icon: UserCheck,
-      color: "text-success",
-      bgColor: "bg-success bg-opacity-10",
-      change: "+5%",
+      icon: <UserCheck size={18} className="text-emerald-400" />,
+      change: "+5% from last month",
       changeType: "positive",
     },
     {
       title: "Pending Verifications",
       value: data.pendingVerifications.toLocaleString(),
-      icon: Building2,
-      color: "text-warning",
-      bgColor: "bg-warning bg-opacity-10",
-      change: "-3%",
+      icon: <Building2 size={18} className="text-orange-400" />,
+      change: "-3% from last month",
       changeType: "negative",
     },
     {
       title: "Fraud Alerts",
       value: data.fraudAlerts.toLocaleString(),
-      icon: AlertTriangle,
-      color: "text-danger",
-      bgColor: "bg-danger bg-opacity-10",
-      change: "-15%",
+      icon: <AlertTriangle size={18} className="text-red-500" />,
+      change: "-15% from last month",
       changeType: "positive",
     },
     {
       title: "System Health",
       value: `${data.systemHealth}%`,
-      icon: Activity,
-      color: "text-success",
-      bgColor: "bg-success bg-opacity-10",
-      change: "+0.2%",
+      icon: <Activity size={18} className="text-green-400" />,
+      change: "+0.2% from last month",
       changeType: "positive",
+      isProgress: true,
     },
-  ];
+  ]
 
   return (
-    <div className="row g-3">
-      {stats.map((stat, index) => {
-        const StatIcon = stat.icon;
-        return (
-          <div key={index} className="col-12 col-md-6 col-lg-3 col-xl-1">
-            <div className="card h-100 shadow-sm border-0 hover-shadow">
-              <div className="card-header d-flex justify-content-between align-items-center bg-white border-0">
-                <h6 className="mb-0 text-secondary">{stat.title}</h6>
-                <div className={`p-2 rounded ${stat.bgColor} d-flex align-items-center justify-content-center`}>
-                  <StatIcon size={20} className={stat.color} />
-                </div>
-              </div>
-              <div className="card-body">
-                <div className="h4 fw-bold text-dark">{stat.value}</div>
-                <div className="d-flex align-items-center gap-1 mt-1">
-                  <TrendingUp
-                    size={14}
-                    className={stat.changeType === "positive" ? "text-success" : "text-danger"}
-                  />
-                  <small className={stat.changeType === "positive" ? "text-success" : "text-danger"}>
-                    {stat.change} from last month
-                  </small>
-                </div>
-                {stat.title === "System Health" && (
-                  <ProgressBar
-                    now={data.systemHealth}
-                    className="mt-2"
-                    style={{ height: "8px" }}
-                    variant="success"
-                  />
-                )}
-              </div>
+    <Row className="g-3">
+      {stats.map((stat, idx) => (
+        <Col key={idx}>
+          <Card className="p-3 shadow-sm h-100 border-0">
+            <div className="d-flex justify-content-between align-items-start mb-2">
+              <span className="text-muted small">{stat.title}</span>
+              {stat.icon}
             </div>
-          </div>
-        );
-      })}
-    </div>
-  );
+            <h4 className="fw-bold">{stat.value}</h4>
+            <small
+              className={`${
+                stat.changeType === "positive" ? "text-success" : "text-danger"
+              }`}
+            >
+              {stat.change}
+            </small>
+            {stat.isProgress && (
+              <ProgressBar
+                now={data.systemHealth}
+                variant="success"
+                className="mt-2"
+                style={{ height: "6px", borderRadius: "4px" }}
+              />
+            )}
+          </Card>
+        </Col>
+      ))}
+    </Row>
+  )
 }

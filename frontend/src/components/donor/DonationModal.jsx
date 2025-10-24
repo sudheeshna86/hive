@@ -32,6 +32,7 @@ export default function DonationModal({ caseData, onClose, onDonationComplete })
       return;
     }
 
+    // Simulate payment processing delay
     await new Promise((resolve) => setTimeout(resolve, 1500));
 
     const serviceFee = amount * 0.09;
@@ -108,7 +109,12 @@ export default function DonationModal({ caseData, onClose, onDonationComplete })
               {/* Donation Amount */}
               <div className="mb-4">
                 <label className="fw-semibold mb-2">Choose Donation Amount</label>
-                <div className="d-grid gap-2 mb-3" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(100px, 1fr))" }}>
+                <div
+                  className="d-grid gap-2 mb-3"
+                  style={{
+                    gridTemplateColumns: "repeat(auto-fit, minmax(100px, 1fr))",
+                  }}
+                >
                   {suggestedAmounts.map((amount) => (
                     <button
                       key={amount}
@@ -147,8 +153,9 @@ export default function DonationModal({ caseData, onClose, onDonationComplete })
                 </div>
                 {donationAmount && (
                   <div className="small text-muted mt-1">
-                    Service fee (9%): ${(parseFloat(donationAmount) * 0.09).toFixed(2)} •
-                    Net amount: ${(parseFloat(donationAmount) * 0.91).toFixed(2)}
+                    Service fee (9%): $
+                    {(parseFloat(donationAmount) * 0.09).toFixed(2)} • Net amount: $
+                    {(parseFloat(donationAmount) * 0.91).toFixed(2)}
                   </div>
                 )}
               </div>
@@ -196,7 +203,9 @@ export default function DonationModal({ caseData, onClose, onDonationComplete })
                         className="form-control border-start-0"
                         placeholder="1234 5678 9012 3456"
                         value={cardDetails.number}
-                        onChange={(e) => handleCardInputChange("number", e.target.value)}
+                        onChange={(e) =>
+                          handleCardInputChange("number", e.target.value)
+                        }
                         required
                       />
                     </div>
@@ -210,7 +219,9 @@ export default function DonationModal({ caseData, onClose, onDonationComplete })
                         className="form-control"
                         placeholder="MM/YY"
                         value={cardDetails.expiry}
-                        onChange={(e) => handleCardInputChange("expiry", e.target.value)}
+                        onChange={(e) =>
+                          handleCardInputChange("expiry", e.target.value)
+                        }
                         required
                       />
                     </div>
@@ -247,8 +258,8 @@ export default function DonationModal({ caseData, onClose, onDonationComplete })
               <div className="d-flex align-items-start gap-2 p-3 bg-success bg-opacity-10 rounded border border-success border-opacity-25 mb-4">
                 <Shield className="text-success" size={16} />
                 <div className="small text-success fw-semibold">
-                  Secure Payment: Your payment information is encrypted and secure. Funds are held
-                  in escrow until service completion.
+                  Secure Payment: Your payment information is encrypted and secure.
+                  Funds are held in escrow until service completion.
                 </div>
               </div>
 
@@ -257,7 +268,9 @@ export default function DonationModal({ caseData, onClose, onDonationComplete })
                 className="btn btn-primary w-100"
                 disabled={isProcessing || !donationAmount || !paymentMethod}
               >
-                {isProcessing ? "Processing Payment..." : (
+                {isProcessing ? (
+                  "Processing Payment..."
+                ) : (
                   <>
                     <Heart size={16} className="me-2" />
                     Donate ${donationAmount || "0"}

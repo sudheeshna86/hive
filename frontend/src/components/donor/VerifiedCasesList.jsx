@@ -1,6 +1,13 @@
 import React, { useState } from "react";
-import { Form, Button, ProgressBar, Badge } from "react-bootstrap";
-import { ClipboardList, ShieldCheck, HeartHandshake, BadgeDollarSign, CheckCircle2 } from "lucide-react";
+import { Form, Button, ProgressBar } from "react-bootstrap";
+import {
+  ClipboardList,
+  ShieldCheck,
+  HeartHandshake,
+  BadgeDollarSign,
+  CheckCircle2,
+} from "lucide-react";
+import VerifiedCaseDetails from "./VerifiedCaseDetails";
 
 const STEP_ICONS = [
   <ClipboardList size={26} className="text-primary" />,
@@ -8,10 +15,9 @@ const STEP_ICONS = [
   <HeartHandshake size={26} className="text-success" />,
   <BadgeDollarSign size={26} className="text-success" />,
   <CheckCircle2 size={26} className="text-success" />,
-  <BadgeDollarSign size={26} className="text-success" />
+  <BadgeDollarSign size={26} className="text-success" />,
 ];
 
-// Dummy data (replace with backend/api)
 export const CASES = [
   {
     id: "CASE-1001",
@@ -26,15 +32,45 @@ export const CASES = [
     currentFunding: 1500,
     registeredBy: "Priya Sharma",
     contact: "9810001000",
-    voiceTranscript: "Patient described breathing issues and poor living conditions.",
-    volunteer: { name: "Priya Sharma", phone: "9810001000", location: "Connaught Place, Delhi" },
-    ngo: { name: "HelpNGO", staff: "Dr. Michael Chen", staffPhone: "9810002000" },
-    funding: { raised: 1500, goal: 5000, donors: 3, lastUpdate: "2025-10-23" },
+    voiceTranscript:
+      "Patient described breathing issues and poor living conditions.",
+    volunteer: {
+      name: "Priya Sharma",
+      phone: "9810001000",
+      location: "Connaught Place, Delhi",
+    },
+    ngo: {
+      name: "HelpNGO",
+      staff: "Dr. Michael Chen",
+      staffPhone: "9810002000",
+    },
+    funding: {
+      raised: 1500,
+      goal: 5000,
+      donors: 3,
+      lastUpdate: "2025-10-23",
+    },
     timeline: [
-      { step: "Case Registered", date: "2025-09-01", actor: "Priya Sharma (Volunteer)", description: "Submitted with proof." },
-      { step: "Verified", date: "2025-09-02", actor: "Dr. Michael Chen (NGO)", description: "Verified by NGO staff." },
-      { step: "Funding Goal Reached", date: "2025-09-05", actor: "Raj Patel & 2 Donors", description: "Funding achieved through donations.", amount: "₹5000" }
-    ]
+      {
+        step: "Case Registered",
+        date: "2025-09-01",
+        actor: "Priya Sharma (Volunteer)",
+        description: "Submitted with proof.",
+      },
+      {
+        step: "Verified",
+        date: "2025-09-02",
+        actor: "Dr. Michael Chen (NGO)",
+        description: "Verified by NGO staff.",
+      },
+      {
+        step: "Funding Goal Reached",
+        date: "2025-09-05",
+        actor: "Raj Patel & 2 Donors",
+        description: "Funding achieved through donations.",
+        amount: "₹5000",
+      },
+    ],
   },
   {
     id: "CASE-1002",
@@ -50,14 +86,43 @@ export const CASES = [
     registeredBy: "Ankit Soni",
     contact: "9810033333",
     voiceTranscript: "Family displaced after floods.",
-    volunteer: { name: "Ankit Soni", phone: "9810033333", location: "Lajpat Nagar, Delhi" },
-    ngo: { name: "ReliefTrust", staff: "Sapna Malhotra", staffPhone: "9810008000" },
-    funding: { raised: 8000, goal: 8000, donors: 5, lastUpdate: "2025-10-23" },
+    volunteer: {
+      name: "Ankit Soni",
+      phone: "9810033333",
+      location: "Lajpat Nagar, Delhi",
+    },
+    ngo: {
+      name: "ReliefTrust",
+      staff: "Sapna Malhotra",
+      staffPhone: "9810008000",
+    },
+    funding: {
+      raised: 8000,
+      goal: 8000,
+      donors: 5,
+      lastUpdate: "2025-10-23",
+    },
     timeline: [
-      { step: "Case Registered", date: "2025-09-01", actor: "Ankit Soni (Volunteer)", description: "Case registered, proof uploaded." },
-      { step: "Verified", date: "2025-09-03", actor: "Sapna Malhotra (NGO)", description: "NGO staff review complete." },
-      { step: "Funding Goal Reached", date: "2025-09-08", actor: "Meena & 4 Donors", description: "Fully funded.", amount: "₹8000" }
-    ]
+      {
+        step: "Case Registered",
+        date: "2025-09-01",
+        actor: "Ankit Soni (Volunteer)",
+        description: "Case registered, proof uploaded.",
+      },
+      {
+        step: "Verified",
+        date: "2025-09-03",
+        actor: "Sapna Malhotra (NGO)",
+        description: "NGO staff review complete.",
+      },
+      {
+        step: "Funding Goal Reached",
+        date: "2025-09-08",
+        actor: "Meena & 4 Donors",
+        description: "Fully funded.",
+        amount: "₹8000",
+      },
+    ],
   },
   {
     id: "CASE-1003",
@@ -73,44 +138,79 @@ export const CASES = [
     registeredBy: "Deepak Meena",
     contact: "9798881000",
     voiceTranscript: "Support needed for studies and food.",
-    volunteer: { name: "Deepak Meena", phone: "9798881000", location: "Noida Sector 62" },
-    ngo: { name: "YouthCare", staff: "S. Iyer", staffPhone: "9810088996" },
-    funding: { raised: 3000, goal: 3000, donors: 2, lastUpdate: "2025-10-23" },
+    volunteer: {
+      name: "Deepak Meena",
+      phone: "9798881000",
+      location: "Noida Sector 62",
+    },
+    ngo: {
+      name: "YouthCare",
+      staff: "S. Iyer",
+      staffPhone: "9810088996",
+    },
+    funding: {
+      raised: 3000,
+      goal: 3000,
+      donors: 2,
+      lastUpdate: "2025-10-23",
+    },
     timeline: [
-      { step: "Case Registered", date: "2025-09-03", actor: "Deepak Meena (Volunteer)", description: "Docs uploaded, site checked." },
-      { step: "Verified", date: "2025-09-05", actor: "S. Iyer (NGO)", description: "Records checked, approved." },
-      { step: "Funding Goal Reached", date: "2025-09-11", actor: "Donors", description: "Goal reached for fees.", amount: "₹3000" },
-      { step: "Voucher Issued", date: "2025-10-01", description: "Tuition voucher sent.", proof: true, proofUrl: "#" },
-      { step: "Voucher Redeemed", date: "2025-10-21", actor: "StudentAid Foundation", description: "Voucher redeemed, receipt attached.", proof: true, proofUrl: "#" }
+      {
+        step: "Case Registered",
+        date: "2025-09-03",
+        actor: "Deepak Meena (Volunteer)",
+        description: "Docs uploaded, site checked.",
+      },
+      {
+        step: "Verified",
+        date: "2025-09-05",
+        actor: "S. Iyer (NGO)",
+        description: "Records checked, approved.",
+      },
+      {
+        step: "Funding Goal Reached",
+        date: "2025-09-11",
+        actor: "Donors",
+        description: "Goal reached for fees.",
+        amount: "₹3000",
+      },
+      {
+        step: "Voucher Issued",
+        date: "2025-10-01",
+        description: "Tuition voucher sent.",
+        proof: true,
+        proofUrl: "#",
+      },
+      {
+        step: "Voucher Redeemed",
+        date: "2025-10-21",
+        actor: "StudentAid Foundation",
+        description: "Voucher redeemed, receipt attached.",
+        proof: true,
+        proofUrl: "#",
+      },
     ],
     service: {
       provider: {
         name: "StudentAid Foundation",
         contact: "info@studentaid.org",
         address: "Noida Sector 62",
-        proofs: { photo: true, receipt: true }
+        proofs: { photo: true, receipt: true },
       },
       voucher: {
         id: "VCH-0019",
         value: 1200,
         redeemed: true,
-        date: "2025-10-21"
-      }
-    }
-  }
+        date: "2025-10-21",
+      },
+    },
+  },
 ];
 
-// Dummy schemes for filter
 const SCHEMES = [
   { id: "SCH-1", name: "Flood Relief 2025" },
-  { id: "SCH-2", name: "Education Drive" }
+  { id: "SCH-2", name: "Education Drive" },
 ];
-
-const urgencyColors = {
-  high: "#ff8911",
-  medium: "#ffd740",
-  critical: "#ff2e3b"
-};
 
 export default function VerifiedCasesList() {
   const [search, setSearch] = useState("");
@@ -118,18 +218,51 @@ export default function VerifiedCasesList() {
   const [type, setType] = useState("");
   const [status, setStatus] = useState("");
   const [scheme, setScheme] = useState("");
+  const [selectedCase, setSelectedCase] = useState(null);
 
-  let filtered = CASES.filter(c =>
-    (!search || (c.beneficiary.toLowerCase().includes(search.toLowerCase()) || c.desc.toLowerCase().includes(search.toLowerCase())))
-    && (!urgency || (c.urgency && c.urgency === urgency))
-    && (!type || c.needs.map(x => x.toLowerCase()).includes(type.toLowerCase()))
-    && (!status || c.status.toLowerCase() === status.toLowerCase())
+  let filtered = CASES.filter(
+    (c) =>
+      (!search ||
+        c.beneficiary.toLowerCase().includes(search.toLowerCase()) ||
+        c.desc.toLowerCase().includes(search.toLowerCase())) &&
+      (!urgency || (c.urgency && c.urgency === urgency)) &&
+      (!type || c.needs.map((x) => x.toLowerCase()).includes(type.toLowerCase())) &&
+      (!status || c.status.toLowerCase() === status.toLowerCase())
   );
 
+  if (selectedCase) {
+    const caseData = CASES.find((c) => c.id === selectedCase);
+    return (
+      <div style={{ padding: 20 }}>
+        <Button
+          variant="outline-success"
+          className="mb-3"
+          onClick={() => setSelectedCase(null)}
+        >
+          ← Back to Cases
+        </Button>
+        <VerifiedCaseDetails caseData={caseData} />
+      </div>
+    );
+  }
+
   return (
-    <div style={{ padding: 10, borderRadius: 16, background: "#fff", boxShadow: "0 0 0.6rem #f1f2f3", marginBottom: 24 }}>
-      <h4 style={{ fontWeight: 700, fontSize: 20, marginBottom: 12 }}>Verified Cases</h4>
-      <div style={{ color: "#666", marginBottom: 24 }}>Browse and donate to verified cases that need your help</div>
+    <div
+      style={{
+        padding: 10,
+        borderRadius: 16,
+        background: "#fff",
+        boxShadow: "0 0 0.6rem #f1f2f3",
+        marginBottom: 24,
+      }}
+    >
+      <h4 style={{ fontWeight: 700, fontSize: 20, marginBottom: 12 }}>
+        Verified Cases
+      </h4>
+      <div style={{ color: "#666", marginBottom: 24 }}>
+        Browse and donate to verified cases that need your help
+      </div>
+
       {/* Filters */}
       <div className="row g-3 mb-4">
         <div className="col-md-4">
@@ -174,6 +307,7 @@ export default function VerifiedCasesList() {
           </Form.Select>
         </div>
       </div>
+
       {/* Case Cards */}
       <div className="row g-4">
         {filtered.map((c) => (
@@ -189,41 +323,20 @@ export default function VerifiedCasesList() {
               }}
             >
               <div className="d-flex align-items-center justify-content-between mb-1">
-                <span style={{ fontWeight: 700, fontSize: 21 }}> {c.id} </span>
-                <span
-                  style={{
-                    fontWeight: 600,
-                    fontSize: 14,
-                    padding: "5px 14px",
-                    background: urgencyColors[c.urgency],
-                    color: "#fff",
-                    borderRadius: 7,
-                    textTransform: "capitalize",
-                  }}
-                >
-                  {c.urgency}
-                </span>
+                <span style={{ fontWeight: 700, fontSize: 21 }}>{c.id}</span>
               </div>
-              <div style={{ color: "#445", fontWeight: 500, marginBottom: 0 }}>
-                <span role="img" aria-label="">
-                  👤
-                </span>{" "}
-                {c.beneficiary} ({c.age}y)
+
+              <div style={{ color: "#445", fontWeight: 500 }}>
+                👤 {c.beneficiary} ({c.age}y)
               </div>
-              {/* Volunteer details */}
               <div className="mb-2" style={{ fontSize: 13, color: "#7fab9b" }}>
-                <span role="img" aria-label="">
-                  🧑‍🤝‍🧑
-                </span>{" "}
-                {c.volunteer.name} | {c.volunteer.phone} | {c.volunteer.location}
+                🧑‍🤝‍🧑 {c.volunteer.name} | {c.volunteer.phone} |{" "}
+                {c.volunteer.location}
               </div>
-              {/* NGO staff */}
               <div className="mb-2" style={{ fontSize: 13, color: "#7fab9b" }}>
-                <span role="img" aria-label="">
-                  🏥
-                </span>{" "}
-                {c.ngo.name} — {c.ngo.staff} ({c.ngo.staffPhone})
+                🏥 {c.ngo.name} — {c.ngo.staff} ({c.ngo.staffPhone})
               </div>
+
               <div className="mb-2">
                 {c.needs.map((tag) => (
                   <span className="badge bg-success me-2" key={tag}>
@@ -231,23 +344,37 @@ export default function VerifiedCasesList() {
                   </span>
                 ))}
               </div>
-              <div style={{ color: "#353535", fontWeight: 400, fontSize: 15, minHeight: 50 }}>{c.desc}</div>
-              <div className="mt-1 text-muted" style={{ fontSize: 13 }}>
-                <span role="img" aria-label="">
-                  📍
-                </span>{" "}
-                {c.location.address}
+
+              <div
+                style={{
+                  color: "#353535",
+                  fontWeight: 400,
+                  fontSize: 15,
+                  minHeight: 50,
+                }}
+              >
+                {c.desc}
               </div>
+
+              <div className="mt-1 text-muted" style={{ fontSize: 13 }}>
+                📍 {c.location.address}
+              </div>
+
               {/* Funding progress */}
               <div style={{ marginTop: 20, marginBottom: 13 }}>
-                <div style={{ fontWeight: 500, fontSize: 14, color: "#545" }}>Funding Progress</div>
+                <div style={{ fontWeight: 500, fontSize: 14, color: "#545" }}>
+                  Funding Progress
+                </div>
                 <ProgressBar
                   now={Math.round((c.funding.raised / c.funding.goal) * 100)}
                   label={`${Math.round((c.funding.raised / c.funding.goal) * 100)}%`}
                   style={{ height: 8, background: "#eaefee" }}
                   variant="success"
                 />
-                <div className="d-flex justify-content-between mt-1" style={{ fontSize: 15 }}>
+                <div
+                  className="d-flex justify-content-between mt-1"
+                  style={{ fontSize: 15 }}
+                >
                   <span>
                     <b>${c.funding.raised.toLocaleString()}</b> raised
                   </span>
@@ -255,53 +382,22 @@ export default function VerifiedCasesList() {
                     <b>${c.funding.goal.toLocaleString()}</b> goal
                   </span>
                 </div>
-                <div className="d-flex justify-content-between mt-1" style={{ color: "#778", fontSize: 13 }}>
-                  <span>
-                    {" "}
-                    <span role="img" aria-label="">
-                      🤝
-                    </span>{" "}
-                    {c.funding.donors} donors{" "}
-                  </span>
-                  <span>
-                    {" "}
-                    <span role="img" aria-label="">
-                      🕒
-                    </span>{" "}
-                    {c.funding.lastUpdate}{" "}
-                  </span>
+                <div
+                  className="d-flex justify-content-between mt-1"
+                  style={{ color: "#778", fontSize: 13 }}
+                >
+                  <span>🤝 {c.funding.donors} donors</span>
+                  <span>🕒 {c.funding.lastUpdate}</span>
                 </div>
               </div>
-              {/* Service provider and proof (if at last stage) */}
-              {c.service && (
-                <div className="mt-1 mb-2">
-                  <div style={{ fontWeight: 500, color: "#1388c9", fontSize: 15 }}>
-                    Redeemed by: {c.service.provider.name} – {c.service.provider.address}
-                  </div>
-                  <div style={{ fontSize: 13, color: "#288c12" }}>Contact: {c.service.provider.contact}</div>
-                  <div className="d-flex gap-2 mt-1">
-                    {c.service.provider.proofs.photo && <Badge bg="info">Photo Proof</Badge>}
-                    {c.service.provider.proofs.receipt && <Badge bg="info">Receipt</Badge>}
-                  </div>
-                </div>
-              )}
+
               <Button
-                className="w-100 mt-3"
-                variant={c.funding.raised < c.funding.goal ? "success" : "outline-success"}
-                disabled={c.funding.raised >= c.funding.goal}
-                style={{ height: 45, fontSize: 18, fontWeight: 600 }}
+                className="w-100 mt-2"
+                variant="outline-primary"
+                style={{ height: 42, fontSize: 16, fontWeight: 600 }}
+                onClick={() => setSelectedCase(c.id)}
               >
-                {c.funding.raised < c.funding.goal ? (
-                  <>
-                    {" "}
-                    <span role="img" aria-label="donate">
-                      🤍
-                    </span>{" "}
-                    Donate $50{" "}
-                  </>
-                ) : (
-                  "Fully Funded"
-                )}
+                View Details
               </Button>
             </div>
           </div>

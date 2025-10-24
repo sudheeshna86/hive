@@ -1,10 +1,24 @@
-import React, { useState } from "react";
-import { Users, Heart, TrendingUp, AlertTriangle, DollarSign, Activity, CheckCircle } from "lucide-react";
-import AdminStats from "./AdminStats";
-import SystemOverview from "./SystemOverview";
-import UserManagement from "./UserManagement";
-import FraudDetection from "./FraudDetection";
-import FinancialOverview from "./FinancialOverview";
+"use client"
+
+import { useState } from "react"
+import { Card, Button, Badge, Tabs, Tab } from "react-bootstrap"
+import {
+  Users,
+  Heart,
+  TrendingUp,
+  AlertTriangle,
+  DollarSign,
+  Activity,
+  CheckCircle,
+  Bell,
+  LogOut
+} from "lucide-react"
+import { useNavigate } from "react-router-dom"
+import AdminStats from "./AdminStats.jsx"
+import SystemOverview from "./SystemOverview.jsx"
+import UserManagement from "./UserManagement.jsx"
+import FraudDetection from "./FraudDetection.jsx"
+import FinancialOverview from "./FinancialOverview.jsx"
 
 // Sample data for admin dashboard
 const sampleData = {
@@ -22,106 +36,91 @@ const sampleData = {
     { id: 4, type: "voucher_redeemed", user: "Hospital ABC", time: "12 minutes ago", amount: 2500 },
     { id: 5, type: "fraud_detected", user: "System Alert", time: "15 minutes ago", severity: "medium" },
   ],
-};
+}
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState("overview")
+  const navigate = useNavigate() // ✅ Correctly initialize navigate
+
+  // Logout logic
+  const handleLogout = () => {
+    localStorage.removeItem("user") // clear logged-in user
+    navigate("/")              // redirect to login page
+  }
 
   return (
-    <div className="bg-light min-vh-100 p-4">
-      <div className="container-fluid">
-
+    <div className="min-vh-100 bg-light p-4">
+      <style>{`
+        .admin-actions {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+        .outline-btn {
+          border-radius: 6px !important;
+          min-width: 120px;
+          justify-content: center;
+        }
+      `}</style>
+      <div className="container">
         {/* Header */}
-        <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+        <div className="d-flex justify-content-between align-items-center mb-4">
           <div>
-            <h1 className="h3 text-dark">Admin Dashboard</h1>
-            <p className="text-muted mb-0">Complete system oversight and management</p>
+            <h1 className="h3">Service Provider Dashboard</h1>
+            <p className="text-muted mb-0">Healthcare Provider &bull; sudheehoney2806</p>
           </div>
-          <div className="d-flex gap-2 flex-wrap mt-2 mt-md-0">
-            <span className="badge bg-success d-flex align-items-center gap-1">
-              <Activity size={16} />
-              System Healthy
-            </span>
-            <button className="btn btn-outline-primary d-flex align-items-center gap-1">
-              <TrendingUp size={16} />
-              Export Report
-            </button>
+          <div className="admin-actions">
+            <Button variant="outline-secondary" className="outline-btn d-flex align-items-center gap-2">
+              <Bell size={16} /> Notifications
+            </Button>
+            <Button
+              variant="outline-secondary"
+              className="outline-btn d-flex align-items-center gap-2"
+              onClick={handleLogout} // ✅ Logout on click
+            >
+              <LogOut size={16} /> Logout
+            </Button>
           </div>
         </div>
 
         {/* Quick Stats */}
         <AdminStats data={sampleData} />
 
-        {/* Tabs */}
-        <ul className="nav nav-tabs mb-3" role="tablist">
-          <li className="nav-item">
-            <button
-              className={`nav-link ${activeTab === "overview" ? "active" : ""}`}
-              onClick={() => setActiveTab("overview")}
-            >
-              System Overview
-            </button>
-          </li>
-          <li className="nav-item">
-            <button
-              className={`nav-link ${activeTab === "users" ? "active" : ""}`}
-              onClick={() => setActiveTab("users")}
-            >
-              User Management
-            </button>
-          </li>
-          <li className="nav-item">
-            <button
-              className={`nav-link ${activeTab === "fraud" ? "active" : ""}`}
-              onClick={() => setActiveTab("fraud")}
-            >
-              Fraud Detection
-            </button>
-          </li>
-          <li className="nav-item">
-            <button
-              className={`nav-link ${activeTab === "financial" ? "active" : ""}`}
-              onClick={() => setActiveTab("financial")}
-            >
-              Financial Overview
-            </button>
-          </li>
-          <li className="nav-item">
-            <button
-              className={`nav-link ${activeTab === "activity" ? "active" : ""}`}
-              onClick={() => setActiveTab("activity")}
-            >
-              Live Activity
-            </button>
-          </li>
-        </ul>
-
-        {/* Tab Content */}
-        <div>
-          {activeTab === "overview" && <SystemOverview />}
-          {activeTab === "users" && <UserManagement />}
-          {activeTab === "fraud" && <FraudDetection />}
-          {activeTab === "financial" && <FinancialOverview />}
-          {activeTab === "activity" && (
-            <div className="card shadow-sm">
-              <div className="card-header d-flex align-items-center gap-2">
-                <Activity size={20} className="text-success" />
-                Live System Activity
-              </div>
-              <div className="card-body">
+        {/* Main Content */}
+        <Tabs
+          id="admin-dashboard-tabs"
+          activeKey={activeTab}
+          onSelect={(k) => setActiveTab(k)}
+          className="mb-3"
+        >
+          <Tab eventKey="overview" title="System Overview">
+            <SystemOverview />
+          </Tab>
+          <Tab eventKey="users" title="User Management">
+            <UserManagement />
+          </Tab>
+          <Tab eventKey="fraud" title="Fraud Detection">
+            <FraudDetection />
+          </Tab>
+          <Tab eventKey="financial" title="Financial Overview">
+            <FinancialOverview />
+          </Tab>
+          <Tab eventKey="activity" title="Live Activity">
+            <Card>
+              <Card.Body>
                 {sampleData.recentActivity.map((activity) => (
                   <div
                     key={activity.id}
-                    className="d-flex justify-content-between align-items-start p-3 mb-2 bg-white rounded shadow-sm"
+                    className="d-flex justify-content-between align-items-center p-2 mb-2 bg-white rounded shadow-sm"
                   >
-                    <div className="d-flex align-items-center gap-3">
+                    <div className="d-flex align-items-center gap-2">
                       {activity.type === "case_registered" && <Users size={20} className="text-primary" />}
                       {activity.type === "donation_received" && <Heart size={20} className="text-danger" />}
                       {activity.type === "case_verified" && <CheckCircle size={20} className="text-success" />}
                       {activity.type === "voucher_redeemed" && <DollarSign size={20} className="text-success" />}
                       {activity.type === "fraud_detected" && <AlertTriangle size={20} className="text-warning" />}
                       <div>
-                        <p className="mb-0 fw-medium">{activity.user}</p>
+                        <p className="mb-0 fw-bold">{activity.user}</p>
                         <small className="text-muted">
                           {activity.type.replace("_", " ").replace(/\b\w/g, (l) => l.toUpperCase())}
                           {activity.amount && ` - ₹${activity.amount.toLocaleString()}`}
@@ -132,22 +131,18 @@ export default function AdminDashboard() {
                     <div className="text-end">
                       <small className="text-muted">{activity.time}</small>
                       {activity.severity && (
-                        <span
-                          className={`badge ms-1 ${
-                            activity.severity === "high" ? "bg-danger" : "bg-secondary"
-                          }`}
-                        >
+                        <Badge bg={activity.severity === "high" ? "danger" : "secondary"} className="ms-1">
                           {activity.severity}
-                        </span>
+                        </Badge>
                       )}
                     </div>
                   </div>
                 ))}
-              </div>
-            </div>
-          )}
-        </div>
+              </Card.Body>
+            </Card>
+          </Tab>
+        </Tabs>
       </div>
     </div>
-  );
+  )
 }

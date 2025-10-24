@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Heart, Users, TrendingUp, Award } from "lucide-react";
 import "bootstrap/dist/css/bootstrap.min.css";
+import "animate.css";
 
 export default function DonorStats() {
   const [stats, setStats] = useState({
@@ -93,7 +94,7 @@ export default function DonorStats() {
             <Award size={18} className="text-secondary" />
           </div>
           <div className="card-body pt-0">
-            <h3 className="fw-bold text-purple">{stats.impactScore}/100</h3>
+            <h3 className="fw-bold text-info">{stats.impactScore}/100</h3>
             <p className="text-muted small mb-0">Community impact rating</p>
           </div>
         </div>
